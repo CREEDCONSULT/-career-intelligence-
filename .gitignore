@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.env
+.pytest_cache/
+.coverage
+.mypy_cache/
+
+# Data
+data/raw/
+data/processed/
+logs/
+*.db
+*.duckdb
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Playwright
+playwright-report/
+test-results/
