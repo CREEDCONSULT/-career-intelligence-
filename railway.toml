@@ -1,5 +1,5 @@
 [build]
-builder = "docker"
+builder = "dockerfile"
 dockerfilePath = "Dockerfile"
 
 [deploy]
@@ -7,6 +7,3 @@ healthcheckPath = "/_stcore/health"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
-
-# Increase build timeout (Railway default is 300s)
-# Note: build timeout is set in Railway UI, not here
