@@ -1,7 +1,7 @@
 # Railway deployment for Streamlit + Data Pipeline
 FROM python:3.11-slim
 
-# Install system dependencies needed for Playwright, DuckDB, pandas
+# Install system dependencies needed for Playwright, DuckDB, pandas, curl
 RUN apt-get update && apt-get install -y --no-install-recommends     gcc     g++     curl     libsqlite3-dev     libpq-dev     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
