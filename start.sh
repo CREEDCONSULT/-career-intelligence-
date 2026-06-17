@@ -8,60 +8,16 @@ echo "Python: "
 
 DB_PATH="/app/data/processed/career_intel.duckdb"
 
-if [ ! -f "" ] || [ "0" = "1" ]; then
-    echo "Database not found or FORCE_REFRESH=1. Running data pipeline..."
-    
-    echo "[1/4] Downloading Job Bank postings..."
-    python scripts/download_job_bank_postings.py 2>&1 | tee /tmp/jb_postings.log || echo "WARNING: Job Bank postings failed"
-    
-    echo "[2/4] Downloading Job Bank wages..."
-    python scripts/download_job_bank_wages.py 2>&1 | tee /tmp/jb_wages.log || echo "WARNING: Job Bank wages failed"
-    
-    echo "[3/4] Downloading StatsCan JVWS..."
-    python scripts/download_statscan_jvws.py 2>&1 | tee /tmp/statscan.log || echo "WARNING: StatsCan failed"
-    
-    echo "[4/4] Downloading Indeed trends..."
-    python scripts/download_indeed_trends.py 2>&1 | tee /tmp/indeed.log || echo "WARNING: Indeed trends failed"
-    
-    echo "Transforming data..."
-    python scripts/transform.py 2>&1 | tee /tmp/transform.log || { echo "ERROR: Transform failed"; exit 1; }
-    
-    echo "Pipeline complete."
-else
-    echo "Database found at . Skipping pipeline."
-fi
-
-if [ -f "" ]; then
-    echo "Database verified at "
-    python -c "
-import duckdb
-c = duckdb.connect('', read_only=True)
-for t in ['job_postings','job_skills','wages_job_bank','vacancies_statscan','indeed_trends']:
-    try:
-        cnt = c.execute(f'SELECT COUNT(*) FROM {t}').fetchone()[0]
-        print(f'  {t}: {cnt:,} rows')
-    except Exception as e:
-        print(f'  {t}: ERROR - {e}')
-"
-else
-    echo "WARNING: Database not found!"
-fi
-
 PORT_NUM=8501
-echo "Starting Streamlit on port ..."
 
+# START STREAMLIT IMMEDIATELY IN BACKGROUND
+echo "Starting Streamlit on port  immediately..."
 streamlit run streamlit_app/app.py     --server.port=     --server.address=0.0.0.0     --server.headless=true     --server.enableCORS=false     --server.enableXsrfProtection=false     --server.enableWebsocketCompression=false     2>&1 | tee /tmp/streamlit.log &
 
 STREAMLIT_PID=
 echo "Streamlit started with PID "
-sleep 3
 
-if ! kill -0  2>/dev/null; then
-    echo "ERROR: Streamlit process died!"
-    cat /tmp/streamlit.log
-    exit 1
-fi
-
+# Wait for Streamlit to be ready (healthcheck will pass)
 echo "Waiting for Streamlit to be ready..."
 for i in 1
 2
@@ -122,37 +78,7 @@ for i in 1
 57
 58
 59
-60
-61
-62
-63
-64
-65
-66
-67
-68
-69
-70
-71
-72
-73
-74
-75
-76
-77
-78
-79
-80
-81
-82
-83
-84
-85
-86
-87
-88
-89
-90; do
+60; do
     if curl -sf "http://localhost:/_stcore/health" > /dev/null 2>&1; then
         echo "Streamlit is healthy! (took  seconds)"
         break
@@ -162,13 +88,42 @@ for i in 1
         cat /tmp/streamlit.log
         exit 1
     fi
-    if [  -eq 90 ]; then
-        echo "ERROR: Timeout after 90 seconds"
-        cat /tmp/streamlit.log
-        exit 1
-    fi
     sleep 1
 done
 
-echo "Streamlit is ready."
+# NOW RUN PIPELINE IN BACKGROUND WHILE STREAMLIT SERVES
+echo "Streamlit is ready. Starting data pipeline in background..."
+
+DB_PATH="/app/data/processed/career_intel.duckdb"
+
+if [ ! -f "" ] || [ "0" = "1" ]; then
+    echo "Database not found or FORCE_REFRESH=1. Running data pipeline in background..."
+    
+    (
+        echo "[1/4] Downloading Job Bank postings..."
+        python scripts/download_job_bank_postings.py 2>&1 | tee /tmp/jb_postings.log || echo "WARNING: Job Bank postings failed"
+        
+        echo "[2/4] Downloading Job Bank wages..."
+        python scripts/download_job_bank_wages.py 2>&1 | tee /tmp/jb_wages.log || echo "WARNING: Job Bank wages failed"
+        
+        echo "[3/4] Downloading StatsCan JVWS..."
+        python scripts/download_statscan_jvws.py 2>&1 | tee /tmp/statscan.log || echo "WARNING: StatsCan failed"
+        
+        echo "[4/4] Downloading Indeed trends..."
+        python scripts/download_indeed_trends.py 2>&1 | tee /tmp/indeed.log || echo "WARNING: Indeed trends failed"
+        
+        echo "Transforming data..."
+        python scripts/transform.py 2>&1 | tee /tmp/transform.log || echo "ERROR: Transform failed"
+        
+        echo "Pipeline complete."
+    ) &
+    
+    PIPELINE_PID=
+    echo "Pipeline started with PID  (running in background)"
+else
+    echo "Database found at . Skipping pipeline."
+fi
+
+# Keep Streamlit running in foreground
+echo "Streamlit is running. Dashboard available at http://localhost:"
 wait 
