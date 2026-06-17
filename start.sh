@@ -5,37 +5,32 @@ echo "=== Career Intelligence Dashboard Startup ==="
 echo "PORT: 8501"
 echo "FORCE_REFRESH: 0"
 echo "Python: "
-echo "PWD: /mnt/c/Users/daunt"
-echo "PORT env: "
-echo "Railway PORT env check: NOT_SET"
 
 DB_PATH="/app/data/processed/career_intel.duckdb"
 
-# Run pipeline if needed
 if [ ! -f "" ] || [ "0" = "1" ]; then
     echo "Database not found or FORCE_REFRESH=1. Running data pipeline..."
     
     echo "[1/4] Downloading Job Bank postings..."
-    python scripts/download_job_bank_postings.py 2>&1 | tee /tmp/jb_postings.log || echo "WARNING: Job Bank postings failed (see /tmp/jb_postings.log)"
+    python scripts/download_job_bank_postings.py 2>&1 | tee /tmp/jb_postings.log || echo "WARNING: Job Bank postings failed"
     
     echo "[2/4] Downloading Job Bank wages..."
-    python scripts/download_job_bank_wages.py 2>&1 | tee /tmp/jb_wages.log || echo "WARNING: Job Bank wages failed (see /tmp/jb_wages.log)"
+    python scripts/download_job_bank_wages.py 2>&1 | tee /tmp/jb_wages.log || echo "WARNING: Job Bank wages failed"
     
     echo "[3/4] Downloading StatsCan JVWS..."
-    python scripts/download_statscan_jvws.py 2>&1 | tee /tmp/statscan.log || echo "WARNING: StatsCan failed (see /tmp/statscan.log)"
+    python scripts/download_statscan_jvws.py 2>&1 | tee /tmp/statscan.log || echo "WARNING: StatsCan failed"
     
     echo "[4/4] Downloading Indeed trends..."
-    python scripts/download_indeed_trends.py 2>&1 | tee /tmp/indeed.log || echo "WARNING: Indeed trends failed (see /tmp/indeed.log)"
+    python scripts/download_indeed_trends.py 2>&1 | tee /tmp/indeed.log || echo "WARNING: Indeed trends failed"
     
     echo "Transforming data..."
-    python scripts/transform.py 2>&1 | tee /tmp/transform.log || { echo "ERROR: Transform failed (see /tmp/transform.log)"; exit 1; }
+    python scripts/transform.py 2>&1 | tee /tmp/transform.log || { echo "ERROR: Transform failed"; exit 1; }
     
     echo "Pipeline complete."
 else
-    echo "Database found at . Skipping pipeline (set FORCE_REFRESH=1 to re-run)."
+    echo "Database found at . Skipping pipeline."
 fi
 
-# Verify database exists and has data
 if [ -f "" ]; then
     echo "Database verified at "
     python -c "
@@ -49,39 +44,25 @@ for t in ['job_postings','job_skills','wages_job_bank','vacancies_statscan','ind
         print(f'  {t}: ERROR - {e}')
 "
 else
-    echo "WARNING: Database not found after pipeline!"
+    echo "WARNING: Database not found!"
 fi
 
 PORT_NUM=8501
 echo "Starting Streamlit on port ..."
 
-# Debug: show what's listening
-echo "Pre-start netstat:"
-netstat -tlnp 2>/dev/null || ss -tlnp 2>/dev/null || echo "netstat/ss not available"
-
-# Start Streamlit in background with more verbose output
-streamlit run streamlit_app/app.py     --server.port=     --server.address=0.0.0.0     --server.headless=true     --server.enableCORS=false     --server.enableXsrfProtection=false     --server.enableWebsocketCompression=false     --logger.level=debug     2>&1 | tee /tmp/streamlit.log &
+streamlit run streamlit_app/app.py     --server.port=     --server.address=0.0.0.0     --server.headless=true     --server.enableCORS=false     --server.enableXsrfProtection=false     --server.enableWebsocketCompression=false     2>&1 | tee /tmp/streamlit.log &
 
 STREAMLIT_PID=
 echo "Streamlit started with PID "
-
-# Give Streamlit a moment to start
 sleep 3
 
-# Debug: check if process is alive
 if ! kill -0  2>/dev/null; then
-    echo "ERROR: Streamlit process died immediately!"
-    echo "Streamlit log:"
+    echo "ERROR: Streamlit process died!"
     cat /tmp/streamlit.log
     exit 1
 fi
 
-# Debug: check what's listening
-echo "Post-start netstat:"
-netstat -tlnp 2>/dev/null || ss -tlnp 2>/dev/null || echo "netstat/ss not available"
-
-# Wait for Streamlit to be ready (max 90 seconds)
-echo "Waiting for Streamlit to be ready on port ..."
+echo "Waiting for Streamlit to be ready..."
 for i in 1
 2
 3
@@ -178,18 +159,16 @@ for i in 1
     fi
     if ! kill -0  2>/dev/null; then
         echo "ERROR: Streamlit process died!"
-        echo "Streamlit log:"
         cat /tmp/streamlit.log
         exit 1
     fi
     if [  -eq 90 ]; then
-        echo "ERROR: Streamlit health check timed out after 90 seconds"
-        echo "Streamlit log:"
+        echo "ERROR: Timeout after 90 seconds"
         cat /tmp/streamlit.log
         exit 1
     fi
     sleep 1
 done
 
-echo "Streamlit is ready. Handing over to process manager..."
+echo "Streamlit is ready."
 wait 
