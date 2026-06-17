@@ -22,7 +22,7 @@ RUN python -c "import spacy; spacy.load('en_core_web_sm')" 2>/dev/null || python
 
 EXPOSE 8501
 
-COPY start.sh /start.sh
-RUN chmod +x /start.sh
+COPY entrypoint.py /entrypoint.py
+RUN chmod +x /entrypoint.py
 
-CMD ["/start.sh"]
+CMD ["python", "/entrypoint.py"]
