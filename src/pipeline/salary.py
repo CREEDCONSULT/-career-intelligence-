@@ -29,7 +29,7 @@ def _to_float(value) -> Optional[float]:
 
 def to_hourly(value: float, per: str) -> float:
     """Convert a salary figure to its hourly equivalent given the period unit."""
-    p = (per or "").strip().lower()
+    p = "" if per is None else str(per).strip().lower()
     if p in ("year", "yearly", "annual", "annually"):
         return value / HOURS_PER_YEAR
     if p in ("month", "monthly"):

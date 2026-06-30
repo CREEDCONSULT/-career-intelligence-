@@ -25,9 +25,9 @@ SOURCES = {
     "sector_postings": [
         "https://raw.githubusercontent.com/hiring-lab/job_postings_tracker/master/CA/job_postings_by_sector_CA.csv",
     ],
-    "wage_by_sector": [
-        "https://raw.githubusercontent.com/hiring-lab/indeed-wage-tracker/main/posted-wage-growth-by-sector.csv",
-        "https://raw.githubusercontent.com/hiring-lab/indeed-wage-tracker/master/posted-wage-growth-by-sector.csv",
+    "wage_by_country": [
+        "https://raw.githubusercontent.com/hiring-lab/indeed-wage-tracker/main/posted-wage-growth-by-country.csv",
+        "https://raw.githubusercontent.com/hiring-lab/indeed-wage-tracker/master/posted-wage-growth-by-country.csv",
     ],
     "ai_postings": [
         "https://raw.githubusercontent.com/hiring-lab/ai-tracker/main/AI_posting.csv",
