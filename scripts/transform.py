@@ -21,9 +21,7 @@ from tqdm import tqdm
 
 from pipeline.noc_mapper import NOCMapper, normalize_noc
 from pipeline.salary import parse_salary_row
-from pipeline.skill_matcher import SkillMatcher
-from pipeline.skill_synonyms import CURATED_SKILLS
-from pipeline.skill_taxonomy import get_taxonomy
+from pipeline.skill_matcher import SkillMatcher, build_skill_index
 
 RAW_DIR = Path(__file__).resolve().parents[1] / "data" / "raw"
 DB_PATH = Path(__file__).resolve().parents[1] / "data" / "processed" / "career_intel.duckdb"
@@ -141,18 +139,8 @@ def load_job_bank_postings(conn):
 
 
 def extract_skills(conn, mapper):
-    tax = get_taxonomy()
-    name_to_id = {name: skill["id"] for name, skill in tax.by_name.items()}
-    cat_by_id = {skill["id"]: skill.get("category", "") for skill in tax.skills.values()}
-    # curated synonyms -> resolve canonical name to a Lightcast id if present else local id
-    for syn, canonical in CURATED_SKILLS.items():
-        cid = name_to_id.get(canonical.lower())
-        if not cid:
-            cid = f"LOCAL:{canonical}"
-            cat_by_id.setdefault(cid, "Specialized Skill")
-        name_to_id[syn] = cid
+    name_to_id, cat_by_id, name_by_id = build_skill_index()
     matcher = SkillMatcher(name_to_id)
-    name_by_id = {sid: nm for nm, sid in name_to_id.items()}
 
     df = conn.execute(
         "SELECT id, requirements_text, posted_date, noc_code FROM job_postings "
@@ -164,7 +152,7 @@ def extract_skills(conn, mapper):
             sid = s["skill_id"]
             records.append({
                 "job_id": row.id, "skill_id": sid,
-                "skill_name": s["skill_name"].title() if sid.startswith("LOCAL:") else tax.skills.get(sid, {}).get("name", s["skill_name"]),
+                "skill_name": name_by_id.get(sid, s["skill_name"]),
                 "category": cat_by_id.get(sid, "Specialized Skill"),
                 "posted_date": row.posted_date, "noc_code": row.noc_code,
             })
