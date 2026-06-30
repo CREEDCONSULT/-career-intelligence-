@@ -1,5 +1,4 @@
 """Shared rendering helpers for dashboard pages."""
-import plotly.express as px
 import streamlit as st
 
 BRAND = {

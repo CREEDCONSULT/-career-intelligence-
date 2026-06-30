@@ -3,11 +3,8 @@ Insight computation module.
 Generates the 4 dashboard views from processed data.
 """
 import pandas as pd
-import numpy as np
 from pathlib import Path
-from functools import lru_cache
-from typing import Dict, List, Optional, Tuple
-import json
+from typing import Dict, List
 
 DB_PATH = Path(__file__).resolve().parents[2] / "data" / "processed" / "career_intel.duckdb"
 
@@ -251,7 +248,7 @@ def get_data_freshness() -> Dict:
         try:
             result = db.execute(f"SELECT max({date_col}) FROM {table}").fetchone()
             freshness[table] = str(result[0]) if result and result[0] else None
-        except:
+        except Exception:
             freshness[table] = None
     return freshness
 

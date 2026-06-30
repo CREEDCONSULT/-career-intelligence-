@@ -4,7 +4,7 @@ import streamlit as st
 
 from pipeline.insights import get_emerging_skills, get_skill_demand_trends
 
-from ._shared import BRAND, data_meta, methodology, style_fig
+from ._shared import data_meta, methodology, style_fig
 
 METHODOLOGY = """
 **Data Source:** Job Bank Open Data monthly CSVs (open.canada.ca), filtered for Toronto/GTA municipalities.

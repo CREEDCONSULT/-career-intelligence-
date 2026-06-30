@@ -87,7 +87,8 @@ def load_noc_mapping(conn):
 def load_job_bank_postings(conn):
     files = sorted(glob.glob(str(RAW_DIR / "job_bank_postings" / "toronto_*.csv")))
     if not files:
-        print("  no Toronto postings files"); return 0
+        print("  no Toronto postings files")
+        return 0
     next_id = 1
     total = 0
     for f in tqdm(files, desc="postings"):
@@ -194,7 +195,8 @@ def load_wages(conn):
 def load_statscan(conn):
     f = RAW_DIR / "statscan" / "jvws_toronto.csv"
     if not f.exists():
-        print("  vacancies_statscan: 0 (StatsCan skipped)"); return
+        print("  vacancies_statscan: 0 (StatsCan skipped)")
+        return
     df = pd.read_csv(f, low_memory=False)
     noc_c = _col(df, "national occupational classification")
     stat_c = _col(df, "statistics")
