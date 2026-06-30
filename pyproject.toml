@@ -21,6 +21,7 @@ dependencies = [
     "spacy>=3.7.0", "streamlit>=1.28.0", "plotly>=5.17.0",
     "altair>=5.2.0", "duckdb>=0.9.0", "sqlalchemy>=2.0.0",
     "pyyaml>=6.0.1", "python-dotenv>=1.0.0", "flashtext2>=1.0.0",
+    "litellm>=1.50.0", "sqlglot>=25.0.0", "datacompy>=0.11.0",
 ]
 
 [project.optional-dependencies]
