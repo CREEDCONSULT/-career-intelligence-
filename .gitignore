@@ -30,3 +30,6 @@ playwright-report/
 test-results/
 
 .venv/
+*.egg-info/
+__pycache__/
+*.pyc
