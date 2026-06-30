@@ -5,7 +5,7 @@ Provides typed access to Jobs data.
 import requests
 import pandas as pd
 from pathlib import Path
-from typing import Optional, List
+from typing import List
 import io
 import zipfile
 

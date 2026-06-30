@@ -1,78 +1,70 @@
 #!/usr/bin/env python3
 """
-Download StatsCan Job Vacancies (Table 14-10-0444-01) via WDS REST API.
-Filters for Toronto economic region.
+Download StatsCan Job Vacancies (Table 14-10-0444-01) via the WDS REST API,
+filtered for the Toronto economic region.
+
+NOTE: ``www150.statcan.gc.ca`` is blocked from some egress environments
+(e.g. this build sandbox returns WinError 10054). It works from a normal
+Canadian connection. This downloader is therefore *optional*: on any network
+failure it prints a skip message and exits 0 so the pipeline continues using
+Indeed's Toronto metro data as the primary market-context source.
 """
-import requests
-import zipfile
+import argparse
 import io
+import sys
+import zipfile
+
 import pandas as pd
-from pathlib import Path
-from tqdm import tqdm
 
-# StatsCan WDS REST API
-BASE_URL = "https://www150.statcan.gc.ca/t1/wds/rest"
-TABLE_ID = "14100444"  # 14-10-0444-01
-TORONTO_ER = "Toronto"  # Economic region name
-RAW_DIR = Path(__file__).resolve().parents[1] / "data" / "raw" / "statscan"
+from pipeline.io_utils import http_get
 
-def download_table_csv():
-    """Download full table as CSV via WDS API."""
-    url = f"{BASE_URL}/getFullTableDownloadCSV/{TABLE_ID}/en"
-    
-    resp = requests.get(url, timeout=60)
-    resp.raise_for_status()
-    data = resp.json()
-    
-    # The API returns a download URL
-    download_url = data.get("object")
+TABLE_ID = "14100444"
+RAW_DIR = __import__("pathlib").Path(__file__).resolve().parents[1] / "data" / "raw" / "statscan"
+
+
+def download_table_csv() -> pd.DataFrame:
+    url = f"https://www150.statcan.gc.ca/t1/wds/rest/getFullTableDownloadCSV/{TABLE_ID}/en"
+    meta = http_get(url, retries=3).json()
+    download_url = meta.get("object")
     if not download_url:
-        raise ValueError("No download URL in response")
-    
-    # Download the ZIP
-    zip_resp = requests.get(download_url, timeout=120, stream=True)
-    zip_resp.raise_for_status()
-    
-    # Extract CSV from ZIP
-    with zipfile.ZipFile(io.BytesIO(zip_resp.content)) as z:
-        csv_name = [n for n in z.namelist() if n.endswith('.csv')][0]
-        with z.open(csv_name) as csv_file:
-            df = pd.read_csv(csv_file)
-    
-    return df
+        raise ValueError(f"No download URL in WDS response: {meta}")
+    zip_bytes = http_get(download_url, retries=3, timeout=180).content
+    with zipfile.ZipFile(io.BytesIO(zip_bytes)) as z:
+        csv_name = next(n for n in z.namelist() if n.endswith(".csv") and "MetaData" not in n)
+        with z.open(csv_name) as f:
+            return pd.read_csv(f, low_memory=False)
 
-def filter_toronto(df):
-    """Filter for Toronto economic region."""
-    # Find GEO column
-    geo_cols = [c for c in df.columns if 'GEO' in c.upper() or 'geo' in c.lower()]
-    if not geo_cols:
-        return pd.DataFrame()
-    
-    geo_col = geo_cols[0]
-    mask = df[geo_col].astype(str).str.contains(TORONTO_ER, case=False, na=False)
-    return df[mask]
+
+def filter_toronto(df: pd.DataFrame) -> pd.DataFrame:
+    geo_col = next((c for c in df.columns if c.upper() == "GEO" or "geo" in c.lower()), None)
+    if geo_col is None:
+        return df
+    return df[df[geo_col].fillna("").astype(str).str.contains("Toronto", case=False, na=False)]
+
 
 def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--allow-skip", action="store_true", default=True,
+                    help="exit 0 on network failure (default) instead of erroring")
+    ap.add_argument("--require", dest="allow_skip", action="store_false",
+                    help="fail hard if StatsCan is unreachable")
+    args = ap.parse_args()
+
     RAW_DIR.mkdir(parents=True, exist_ok=True)
-    
-    print("Downloading StatsCan JVWS table 14-10-0444-01...")
-    df = download_table_csv()
-    print(f"Total rows: {len(df):,}")
-    
-    print("Filtering for Toronto economic region...")
-    toronto_df = filter_toronto(df)
-    print(f"Toronto rows: {len(toronto_df):,}")
-    
-    if len(toronto_df) > 0:
-        output_path = RAW_DIR / "jvws_toronto.csv"
-        toronto_df.to_csv(output_path, index=False)
-        print(f"Saved to {output_path}")
-        
-        # Show unique NOCs
-        noc_cols = [c for c in toronto_df.columns if 'NOC' in c.upper()]
-        if noc_cols:
-            unique_nocs = toronto_df[noc_cols[0]].nunique()
-            print(f"Unique NOC codes: {unique_nocs}")
+    try:
+        print(f"Downloading StatsCan JVWS table {TABLE_ID}...")
+        df = download_table_csv()
+        toronto = filter_toronto(df)
+        out = RAW_DIR / "jvws_toronto.csv"
+        toronto.to_csv(out, index=False, encoding="utf-8")
+        print(f"  Toronto rows: {len(toronto):,} / {len(df):,} -> {out.name}")
+    except Exception as e:  # noqa: BLE001
+        msg = f"StatsCan JVWS unavailable here ({type(e).__name__}: {e})."
+        if args.allow_skip:
+            print(f"  ! {msg} Skipping (run from a Canadian connection to include it).")
+            sys.exit(0)
+        raise
+
 
 if __name__ == "__main__":
     main()

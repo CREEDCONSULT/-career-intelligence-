@@ -3,11 +3,8 @@ Insight computation module.
 Generates the 4 dashboard views from processed data.
 """
 import pandas as pd
-import numpy as np
 from pathlib import Path
-from functools import lru_cache
-from typing import Dict, List, Optional, Tuple
-import json
+from typing import Dict, List
 
 DB_PATH = Path(__file__).resolve().parents[2] / "data" / "processed" / "career_intel.duckdb"
 
@@ -130,7 +127,7 @@ def compute_role_fit(user_skills: List[str], lookback_months: int = 3) -> Dict:
         GROUP BY skill_id, skill_name, category
     ),
     total_postings AS (
-        SELECT COUNT(DISTINCT job_id) AS total FROM job_postings
+        SELECT COUNT(DISTINCT id) AS total FROM job_postings
     )
     SELECT 
         r.skill_id, r.skill_name, r.category, r.demand_cnt,
@@ -145,15 +142,19 @@ def compute_role_fit(user_skills: List[str], lookback_months: int = 3) -> Dict:
     if top_skills.empty:
         return {"error": "No skill demand data available"}
     
-    from src.pipeline.skill_taxonomy import get_taxonomy
-    taxonomy = get_taxonomy()
-    
+    from pipeline.skill_matcher import SkillMatcher, build_skill_index
+    name_to_id, _cat, _name = build_skill_index()
+    matcher = SkillMatcher(name_to_id)
+
     user_skill_ids = set()
     for skill in user_skills:
-        matches = taxonomy.fuzzy_match(skill, threshold=80, limit=1)
-        if matches:
-            user_skill_ids.add(matches[0]["skill_id"])
-    
+        for m in matcher.extract(skill):
+            user_skill_ids.add(m["skill_id"])
+        # also try the raw lowercased name as an exact key (handles multi-word inputs)
+        sid = name_to_id.get(str(skill).strip().lower())
+        if sid:
+            user_skill_ids.add(sid)
+
     demanded_ids = set(top_skills["skill_id"].tolist())
     matched = user_skill_ids & demanded_ids
     gap = demanded_ids - user_skill_ids
@@ -187,42 +188,50 @@ def _generate_recommendation(gap_skills: pd.DataFrame) -> str:
         return f"Top missing skill: {name}. Add to learning plan."
 
 # VIEW 4: MARKET CONTEXT
+def _metric_series(db, metric: str, monthly_avg: bool = False) -> pd.DataFrame:
+    """Time series for one Indeed metric from the long-format indeed_trends table."""
+    try:
+        df = db.execute(
+            "SELECT date, value FROM indeed_trends WHERE metric = ? AND date IS NOT NULL ORDER BY date",
+            [metric],
+        ).df()
+    except Exception:
+        return pd.DataFrame(columns=["date", "value"])
+    if monthly_avg and not df.empty:
+        df["date"] = pd.to_datetime(df["date"])
+        df = (df.set_index("date").resample("MS")["value"].mean().reset_index())
+    return df
+
+
 def get_market_context() -> Dict:
     db = get_db()
-    
-    indeed_query = """
-    SELECT date, postings_index, wage_growth_yoy, ai_share
-    FROM indeed_trends
-    WHERE geography = 'Ontario'
-    ORDER BY date DESC
-    LIMIT 12
-    """
-    try:
-        indeed_df = db.execute(indeed_query).df()
-    except:
-        indeed_df = pd.DataFrame()
-    
+
+    postings = _metric_series(db, "postings_index", monthly_avg=True)   # Toronto
+    wage_growth = _metric_series(db, "wage_growth")                      # Canada
+    ai_share = _metric_series(db, "ai_share", monthly_avg=True)          # Canada
+
     vacancy_query = """
     SELECT year, quarter, SUM(vacancy_count) AS total_vacancies,
            AVG(avg_offered_wage) AS avg_wage
     FROM vacancies_statscan
     WHERE region = 'Toronto'
     GROUP BY year, quarter
-    ORDER BY year DESC, quarter DESC
-    LIMIT 8
+    ORDER BY year, quarter
     """
     try:
         vacancy_df = db.execute(vacancy_query).df()
-    except:
+    except Exception:
         vacancy_df = pd.DataFrame()
-    
+
     return {
-        "indeed_trends": indeed_df.to_dict("records") if not indeed_df.empty else [],
-        "vacancy_trends": vacancy_df.to_dict("records") if not vacancy_df.empty else [],
+        "postings_index": postings,
+        "wage_growth": wage_growth,
+        "ai_share": ai_share,
+        "vacancy_trends": vacancy_df,
         "last_updated": {
-            "indeed": indeed_df["date"].max() if not indeed_df.empty else None,
-            "vacancies": f"Q{vacancy_df['quarter'].max()} {vacancy_df['year'].max()}" if not vacancy_df.empty else None
-        }
+            "postings": str(postings["date"].max()) if not postings.empty else None,
+            "vacancies": f"Q{int(vacancy_df['quarter'].iloc[-1])} {int(vacancy_df['year'].iloc[-1])}" if not vacancy_df.empty else None,
+        },
     }
 
 # DATA FRESHNESS & CONFIDENCE
@@ -239,7 +248,7 @@ def get_data_freshness() -> Dict:
         try:
             result = db.execute(f"SELECT max({date_col}) FROM {table}").fetchone()
             freshness[table] = str(result[0]) if result and result[0] else None
-        except:
+        except Exception:
             freshness[table] = None
     return freshness
 

@@ -9,7 +9,7 @@ __pycache__/
 
 # Data
 data/raw/
-data/processed/
+data/processed/*
 logs/
 *.db
 *.duckdb
@@ -28,3 +28,12 @@ Thumbs.db
 # Playwright
 playwright-report/
 test-results/
+
+.venv/
+*.egg-info/
+__pycache__/
+*.pyc
+
+# ...but DO commit the small built demo database so the app runs on a fresh clone
+!data/processed/
+!data/processed/career_intel.duckdb
