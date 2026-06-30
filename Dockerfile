@@ -7,18 +7,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends     gcc     g++
 WORKDIR /app
 
 # Copy requirements first for caching
-COPY requirements.txt .
+COPY requirements.txt pyproject.toml ./
 RUN pip install --no-cache-dir -r requirements.txt
-
-# Install Playwright with only chromium (no system deps - already installed above)
-RUN playwright install chromium
 
 COPY . .
 
-RUN mkdir -p /app/data/raw/job_bank_postings /app/data/raw/job_bank_wages /app/data/raw/statscan /app/data/raw/indeed /app/data/processed /app/logs
+# Install the local `pipeline` package so `from pipeline.X import ...` resolves at runtime
+RUN pip install --no-cache-dir -e .
 
-# spaCy model already downloaded in base image build, but ensure it exists
-RUN python -c "import spacy; spacy.load('en_core_web_sm')" 2>/dev/null || python -m spacy download en_core_web_sm
+RUN mkdir -p /app/data/raw/job_bank_postings /app/data/raw/job_bank_wages /app/data/raw/statscan /app/data/raw/indeed /app/data/processed /app/logs
 
 EXPOSE 8501
 
