@@ -1,0 +1,13 @@
+LICENSE
+README.md
+pyproject.toml
+src/career_intelligence_dashboard.egg-info/PKG-INFO
+src/career_intelligence_dashboard.egg-info/SOURCES.txt
+src/career_intelligence_dashboard.egg-info/dependency_links.txt
+src/career_intelligence_dashboard.egg-info/requires.txt
+src/career_intelligence_dashboard.egg-info/top_level.txt
+src/pipeline/__init__.py
+src/pipeline/insights.py
+src/pipeline/noc_mapper.py
+src/pipeline/skill_taxonomy.py
+src/pipeline/statscan_client.py

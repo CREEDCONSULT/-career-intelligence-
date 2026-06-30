@@ -91,12 +91,8 @@ with st.sidebar:
 st.title("Career Intelligence Dashboard")
 st.caption("Transforming 50,000+ monthly Toronto job postings into actionable career intelligence")
 
-import sys
-from pathlib import Path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src" / "pipeline"))
-
 try:
-    from insights import (get_skill_demand_trends, get_emerging_skills, get_salary_by_role, compute_role_fit, get_market_context, get_data_freshness, get_confidence_summary)
+    from pipeline.insights import (get_skill_demand_trends, get_emerging_skills, get_salary_by_role, compute_role_fit, get_market_context, get_data_freshness, get_confidence_summary)
     INSIGHTS_AVAILABLE = True
 except ImportError as e:
     INSIGHTS_AVAILABLE = False

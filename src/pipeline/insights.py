@@ -145,7 +145,7 @@ def compute_role_fit(user_skills: List[str], lookback_months: int = 3) -> Dict:
     if top_skills.empty:
         return {"error": "No skill demand data available"}
     
-    from src.pipeline.skill_taxonomy import get_taxonomy
+    from pipeline.skill_taxonomy import get_taxonomy
     taxonomy = get_taxonomy()
     
     user_skill_ids = set()

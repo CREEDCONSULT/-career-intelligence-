@@ -3,6 +3,7 @@ NOC 2021 code mapper.
 Loads NOC codes with readable titles for joining across datasets.
 """
 import csv
+import pandas as pd
 import requests
 from pathlib import Path
 from io import StringIO
@@ -81,5 +82,3 @@ class NOCMapper:
     
     def get_category(self, noc_code):
         return self.noc_to_category.get(str(noc_code).strip(), "Unknown")
-
-import pandas as pd

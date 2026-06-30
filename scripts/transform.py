@@ -228,7 +228,7 @@ def load_indeed_trends(conn):
 
 def load_noc_mapping(conn):
     """Load NOC code to title mapping."""
-    from src.pipeline.noc_mapper import NOCMapper
+    from pipeline.noc_mapper import NOCMapper
     mapper = NOCMapper()
     
     records = []
@@ -242,8 +242,8 @@ def load_noc_mapping(conn):
 
 def extract_skills_for_postings(conn):
     """Run skill extraction on loaded postings."""
-    from src.pipeline.skill_taxonomy import get_taxonomy
-    
+    from pipeline.skill_taxonomy import get_taxonomy
+
     taxonomy = get_taxonomy()
     
     # Get postings without skills yet
@@ -278,20 +278,17 @@ def main():
     print("Initializing DuckDB...")
     conn = init_db()
     
-    print("
-=== Loading Data ===")
+    print("\n=== Loading Data ===")
     load_noc_mapping(conn)
     load_job_bank_postings(conn)
     load_job_bank_wages(conn)
     load_statscan_jvws(conn)
     load_indeed_trends(conn)
     
-    print("
-=== Extracting Skills ===")
+    print("\n=== Extracting Skills ===")
     extract_skills_for_postings(conn)
     
-    print("
-=== Verification ===")
+    print("\n=== Verification ===")
     tables = [
         "job_postings", "job_skills", "wages_job_bank",
         "vacancies_statscan", "indeed_trends", "noc_mapping"
@@ -304,8 +301,7 @@ def main():
             print(f"  {t}: ERROR")
     
     conn.close()
-    print("
-Transform complete!")
+    print("\nTransform complete!")
 
 if __name__ == "__main__":
     main()
