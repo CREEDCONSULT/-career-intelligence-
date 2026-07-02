@@ -87,8 +87,9 @@ def _overview_stats(con, month: str):
 
 
 def _skills_stats(con, month: str):
+    from pipeline.insights import _SKILLS_TABLE
     rows = con.execute(f"""
-        SELECT skill_name, count(DISTINCT job_id) AS n FROM job_skills
+        SELECT skill_name, count(DISTINCT job_id) AS n FROM {_SKILLS_TABLE}
         WHERE strftime(posted_date, '%Y-%m') = '{month}'
         GROUP BY 1 ORDER BY n DESC LIMIT 5
     """).fetchall()

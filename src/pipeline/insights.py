@@ -6,10 +6,15 @@ import pandas as pd
 from pathlib import Path
 from typing import Dict, List
 
+import os
+
 from pipeline.market import load_market
 
 DB_PATH = Path(__file__).resolve().parents[2] / "data" / "processed" / "career_intel.duckdb"
 _REGION = load_market().economic_region_name
+# Skill source: 'flashtext' (dictionary baseline, table job_skills) or 'llm'
+# (LLM-extracted, table job_skills_llm). See docs/llm-eval-results.md for the A/B.
+_SKILLS_TABLE = "job_skills_llm" if os.getenv("SKILLS_METHOD", "flashtext") == "llm" else "job_skills"
 
 def get_db():
     import duckdb
@@ -26,8 +31,8 @@ def get_skill_demand_trends(months: int = 12, top_n: int = 20) -> pd.DataFrame:
             skill_name,
             category,
             COUNT(DISTINCT job_id) AS postings_count
-        FROM job_skills
-        WHERE posted_date >= (SELECT max(posted_date) FROM job_skills) - INTERVAL '{months} months'
+        FROM {_SKILLS_TABLE}
+        WHERE posted_date >= (SELECT max(posted_date) FROM {_SKILLS_TABLE}) - INTERVAL '{months} months'
         GROUP BY 1, 2, 3, 4
     ),
     ranked AS (
@@ -51,8 +56,8 @@ def get_emerging_skills(months: int = 3, min_mentions: int = 10, growth_threshol
             skill_id,
             skill_name,
             COUNT(DISTINCT job_id) AS cnt
-        FROM job_skills
-        WHERE posted_date >= (SELECT max(posted_date) FROM job_skills) - INTERVAL '{months*2} months'
+        FROM {_SKILLS_TABLE}
+        WHERE posted_date >= (SELECT max(posted_date) FROM {_SKILLS_TABLE}) - INTERVAL '{months*2} months'
         GROUP BY 1, 2, 3
     ),
     pivoted AS (
@@ -125,8 +130,8 @@ def compute_role_fit(user_skills: List[str], lookback_months: int = 3) -> Dict:
     query = f"""
     WITH recent AS (
         SELECT skill_id, skill_name, category, COUNT(DISTINCT job_id) AS demand_cnt
-        FROM job_skills
-        WHERE posted_date >= (SELECT max(posted_date) FROM job_skills) - INTERVAL '{lookback_months} months'
+        FROM {_SKILLS_TABLE}
+        WHERE posted_date >= (SELECT max(posted_date) FROM {_SKILLS_TABLE}) - INTERVAL '{lookback_months} months'
         GROUP BY skill_id, skill_name, category
     ),
     total_postings AS (

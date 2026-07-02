@@ -16,7 +16,7 @@ _NOTES_TEMPLATE = """
 Domain notes and query conventions (follow these):
 - Join occupations across tables on `noc_code` (5-digit NOC 2021, zero-padded). When the question refers to a role/occupation by name, JOIN `noc_mapping` and use `noc_mapping.title`; do not return bare noc_code.
 - To count or trend postings that involve a SKILL, use the `job_skills` table (filter/group by `job_skills.skill_name`, count DISTINCT job_id). Do NOT pattern-match `job_postings.title` for skills.
-- `job_skills` rows are skills extracted from the job TITLE + NOC occupation name (postings have no requirements free-text). Treat as occupational/role demand, not a full skills census.
+- `job_skills` rows are skills extracted from the job TITLE + NOC occupation name (postings have no requirements free-text). Treat as occupational/role demand, not a full skills census. If a `job_skills_llm` table exists, it holds LLM-extracted implied skills for the same postings — prefer `job_skills` unless the question asks about LLM/implied skills.
 - Wage questions use `wages_job_bank` (normalized to HOURLY, annual/2080) and vacancy questions use `vacancies_statscan`; for both, filter `region = '{region}'` unless the question explicitly asks otherwise.
 - `indeed_trends` is LONG-format: filter by `metric` in ('postings_index','wage_growth','ai_share'); `value` holds the number; `geography` is '{market}' (postings_index) or 'Canada' (wage_growth, ai_share).
 - `posted_date` may be NULL; aggregate only over non-null dates (add `WHERE posted_date IS NOT NULL`).
