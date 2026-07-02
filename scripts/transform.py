@@ -19,9 +19,12 @@ import duckdb
 import pandas as pd
 from tqdm import tqdm
 
+from pipeline.market import load_market
 from pipeline.noc_mapper import NOCMapper, normalize_noc
 from pipeline.salary import parse_salary_row
 from pipeline.skill_matcher import SkillMatcher, build_skill_index
+
+MARKET = load_market()
 
 RAW_DIR = Path(__file__).resolve().parents[1] / "data" / "raw"
 DB_PATH = Path(__file__).resolve().parents[1] / "data" / "processed" / "career_intel.duckdb"
@@ -179,7 +182,7 @@ def load_wages(conn):
         out = pd.DataFrame()
         out["noc_code"] = df[noc_c].apply(normalize_noc)
         out["year"] = year
-        out["region"] = "Toronto"
+        out["region"] = MARKET.economic_region_name
         annual = pd.to_numeric(df[flag_c], errors="coerce").fillna(0).astype(int) if flag_c else 0
         div = annual.replace({1: 2080, 0: 1}) if hasattr(annual, "replace") else 1
         out["min_wage"] = pd.to_numeric(df[low_c], errors="coerce") / div
@@ -211,7 +214,7 @@ def load_statscan(conn):
     vac = df[df[stat_c].str.contains("vacanc", case=False, na=False)].groupby(["noc_code", "year", "quarter"])["value"].sum().rename("vacancy_count")
     wage = df[df[stat_c].str.contains("wage", case=False, na=False)].groupby(["noc_code", "year", "quarter"])["value"].mean().rename("avg_offered_wage")
     out = pd.concat([vac, wage], axis=1).reset_index()
-    out["region"] = "Toronto"
+    out["region"] = MARKET.economic_region_name
     out["vacancy_count"] = out["vacancy_count"].fillna(0).astype(int)
     conn.register("v_df", out)
     conn.execute("INSERT INTO vacancies_statscan SELECT noc_code, year, quarter, region, vacancy_count, avg_offered_wage FROM v_df")
@@ -225,9 +228,9 @@ def load_indeed(conn):
     metro = base / "indeed_metro_postings.csv"
     if metro.exists():
         df = pd.read_csv(metro)
-        df = df[df["Metro"].astype(str).str.contains("Toronto", case=False, na=False)]
+        df = df[df["Metro"].astype(str) == MARKET.indeed_metro]
         for _, r in df.iterrows():
-            rows.append({"date": r["date"], "geography": "Toronto", "metric": "postings_index",
+            rows.append({"date": r["date"], "geography": MARKET.name, "metric": "postings_index",
                          "value": r["indeed_job_postings_index"], "sector": None})
 
     ai = base / "indeed_ai_postings.csv"

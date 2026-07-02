@@ -1,0 +1,37 @@
+# Market configuration — swap this file (or point MARKET_CONFIG at another) to
+# retarget the entire pipeline + dashboard at a different Canadian market.
+name: Toronto
+tagline: Toronto job market, decoded.
+
+# Job Bank postings `City` substring filters (lowercase)
+jobbank_cities:
+  - toronto
+  - mississauga
+  - brampton
+  - vaughan
+  - markham
+  - richmond hill
+  - oakville
+  - burlington
+  - milton
+  - halton hills
+  - ajax
+  - pickering
+  - whitby
+  - oshawa
+  - clarington
+  - scarborough
+  - north york
+  - etobicoke
+  - east york
+  - york
+
+# Job Bank wages economic region
+economic_region_name: Toronto
+economic_region_codes: ["3530", "ER3530"]
+
+# StatsCan GEO column substring
+statscan_geo_contains: Toronto
+
+# Indeed Hiring Lab metro label
+indeed_metro: "Toronto, ON"

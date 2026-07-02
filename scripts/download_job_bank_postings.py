@@ -12,17 +12,14 @@ import argparse
 from pathlib import Path
 
 from pipeline.io_utils import ckan_csv_resources, http_get, read_csv_bytes
+from pipeline.market import load_market
 
 DATASET_ID = "ea639e28-c0fc-48bf-b5dd-b8899bd43072"
 RAW_DIR = Path(__file__).resolve().parents[1] / "data" / "raw" / "job_bank_postings"
 
-# Toronto/GTA location filters (case-insensitive substring match on the City column)
-TORONTO_LOCATIONS = [
-    "toronto", "mississauga", "brampton", "vaughan", "markham",
-    "richmond hill", "oakville", "burlington", "milton", "halton hills",
-    "ajax", "pickering", "whitby", "oshawa", "clarington",
-    "scarborough", "north york", "etobicoke", "east york", "york",
-]
+MARKET = load_market()
+# Market location filters (case-insensitive substring match on the City column)
+TORONTO_LOCATIONS = MARKET.jobbank_cities
 
 
 def _col(df, *needles):
@@ -45,7 +42,9 @@ def filter_toronto(df):
         city_lc = df[city_col].fillna("").astype(str).str.lower()
         mask = city_lc.apply(lambda x: any(loc in x for loc in TORONTO_LOCATIONS))
     if er_col is not None:
-        er_mask = df[er_col].fillna("").astype(str).str.contains("toronto", case=False, na=False)
+        er_mask = df[er_col].fillna("").astype(str).str.contains(
+            MARKET.economic_region_name, case=False, na=False
+        )
         mask = er_mask if mask is None else (mask | er_mask)
     return df[mask]
 

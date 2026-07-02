@@ -11,8 +11,10 @@ from pathlib import Path
 import pandas as pd
 
 from pipeline.io_utils import http_get
+from pipeline.market import load_market
 
 RAW_DIR = Path(__file__).resolve().parents[1] / "data" / "raw" / "indeed"
+MARKET = load_market()
 
 # (key, [candidate urls in priority order])
 SOURCES = {
@@ -60,8 +62,8 @@ def main():
         if key == "metro_postings":
             metro_col = next((c for c in df.columns if c.lower() == "metro"), None)
             if metro_col:
-                df = df[df[metro_col].astype(str).str.contains("Toronto", case=False, na=False)]
-            assert len(df) > 0, "No Toronto rows in Indeed metro file"
+                df = df[df[metro_col].astype(str) == MARKET.indeed_metro]
+            assert len(df) > 0, f"No {MARKET.indeed_metro} rows in Indeed metro file"
         elif key == "provincial_postings":
             prov_col = next((c for c in df.columns if "province" in c.lower()), None)
             if prov_col:

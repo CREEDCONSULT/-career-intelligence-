@@ -6,7 +6,10 @@ import pandas as pd
 from pathlib import Path
 from typing import Dict, List
 
+from pipeline.market import load_market
+
 DB_PATH = Path(__file__).resolve().parents[2] / "data" / "processed" / "career_intel.duckdb"
+_REGION = load_market().economic_region_name
 
 def get_db():
     import duckdb
@@ -84,7 +87,7 @@ def get_salary_by_role(min_vacancies: int = 50) -> pd.DataFrame:
             MAX(max_wage) AS max_wage,
             COUNT(*) AS wage_records
         FROM wages_job_bank
-        WHERE region = 'Toronto'
+        WHERE region = '{_REGION}'
         GROUP BY noc_code
     ),
     vacancies AS (
@@ -93,7 +96,7 @@ def get_salary_by_role(min_vacancies: int = 50) -> pd.DataFrame:
             SUM(vacancy_count) AS total_vacancies,
             AVG(avg_offered_wage) AS avg_offered_wage
         FROM vacancies_statscan
-        WHERE region = 'Toronto'
+        WHERE region = '{_REGION}'
         GROUP BY noc_code
     ),
     noc_meta AS (
@@ -176,7 +179,7 @@ def compute_role_fit(user_skills: List[str], lookback_months: int = 3) -> Dict:
 
 def _generate_recommendation(gap_skills: pd.DataFrame) -> str:
     if gap_skills.empty:
-        return "Your skills align well with current Toronto market demand!"
+        return f"Your skills align well with current {load_market().name} market demand!"
     top_gap = gap_skills.iloc[0]
     cat = top_gap.get("category", "")
     name = top_gap.get("skill_name", "")
@@ -210,11 +213,11 @@ def get_market_context() -> Dict:
     wage_growth = _metric_series(db, "wage_growth")                      # Canada
     ai_share = _metric_series(db, "ai_share", monthly_avg=True)          # Canada
 
-    vacancy_query = """
+    vacancy_query = f"""
     SELECT year, quarter, SUM(vacancy_count) AS total_vacancies,
            AVG(avg_offered_wage) AS avg_wage
     FROM vacancies_statscan
-    WHERE region = 'Toronto'
+    WHERE region = '{_REGION}'
     GROUP BY year, quarter
     ORDER BY year, quarter
     """

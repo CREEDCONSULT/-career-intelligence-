@@ -6,6 +6,9 @@ Each insight view lives in streamlit_app/pages_impl/<page>.py as a render() fn.
 import streamlit as st
 
 from pages_impl import ask, market_context, role_fit, salary_ranges, skill_demand
+from pipeline.market import load_market
+
+MARKET = load_market()
 
 st.set_page_config(
     page_title="Career Intelligence Dashboard",
@@ -48,7 +51,7 @@ with st.sidebar:
     st.markdown(
         "<div style='text-align:center;padding:1rem 0;'>"
         "<h1 style='font-size:1.5rem;margin-bottom:0;'>Career Intelligence</h1>"
-        "<p style='color:#64748D;font-size:0.875rem;'>Toronto job market, decoded.</p></div>",
+        f"<p style='color:#64748D;font-size:0.875rem;'>{MARKET.tagline}</p></div>",
         unsafe_allow_html=True,
     )
     page = st.radio("Insights", list(PAGES.keys()), label_visibility="collapsed")
@@ -83,6 +86,6 @@ with st.sidebar:
     st.caption("Built by Dante (Mr. C. Mezie) · creedConsult")
 
 st.title("Career Intelligence Dashboard")
-st.caption("Transforming Toronto job postings into actionable career intelligence")
+st.caption(f"Transforming {MARKET.name} job postings into actionable career intelligence")
 
 PAGES[page].render(date_range)

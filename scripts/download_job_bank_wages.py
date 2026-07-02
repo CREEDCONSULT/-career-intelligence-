@@ -9,10 +9,12 @@ import argparse
 from pathlib import Path
 
 from pipeline.io_utils import ckan_csv_resources, http_get, read_csv_bytes
+from pipeline.market import load_market
 
 DATASET_ID = "adad580f-76b0-4502-bd05-20c125de9116"
 RAW_DIR = Path(__file__).resolve().parents[1] / "data" / "raw" / "job_bank_wages"
-TORONTO_ER_CODES = {"3530", "ER3530"}
+MARKET = load_market()
+TORONTO_ER_CODES = set(MARKET.economic_region_codes)
 
 
 def _col(df, *needles):
@@ -29,7 +31,9 @@ def filter_toronto(df):
     code_col = _col(df, "er_code", "economic region code", "er code")
     mask = None
     if name_col is not None:
-        mask = df[name_col].fillna("").astype(str).str.contains("toronto", case=False, na=False)
+        mask = df[name_col].fillna("").astype(str).str.contains(
+            MARKET.economic_region_name, case=False, na=False
+        )
     if code_col is not None:
         code_mask = df[code_col].fillna("").astype(str).str.replace(".0", "", regex=False).str.strip().isin(TORONTO_ER_CODES)
         mask = code_mask if mask is None else (mask | code_mask)
