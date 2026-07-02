@@ -12,7 +12,7 @@ from dataclasses import dataclass
 _DEFAULTS = {
     "anthropic": {
         "batch": "anthropic/claude-haiku-4-5-20251001",
-        "interactive": "anthropic/claude-sonnet-4-6",
+        "interactive": "anthropic/claude-sonnet-5",
         "hard": "anthropic/claude-opus-4-8",
     },
     "openai": {
