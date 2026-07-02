@@ -56,6 +56,6 @@
   {"question": "What is the minimum wage across Toronto roles?",
    "reference_sql": "SELECT min(min_wage) AS m FROM wages_job_bank WHERE region = 'Toronto' AND min_wage > 0"},
 
-  {"question": "Which 5 skills grew the most month over month most recently?",
-   "reference_sql": "WITH m AS (SELECT skill_name, date_trunc('month', posted_date) AS mo, count(DISTINCT job_id) AS c FROM job_skills WHERE posted_date IS NOT NULL GROUP BY 1,2) SELECT skill_name, max(c) AS peak FROM m GROUP BY skill_name ORDER BY peak DESC LIMIT 5"}
+  {"question": "Which 5 skills have the most postings in the most recent month?",
+   "reference_sql": "WITH latest AS (SELECT max(date_trunc('month', posted_date)) AS mo FROM job_skills WHERE posted_date IS NOT NULL) SELECT skill_name, count(DISTINCT job_id) AS n FROM job_skills WHERE date_trunc('month', posted_date) = (SELECT mo FROM latest) GROUP BY skill_name ORDER BY n DESC LIMIT 5"}
 ]

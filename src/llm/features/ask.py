@@ -57,8 +57,9 @@ def _narrate(gw, question: str, df: pd.DataFrame) -> tuple[str, bool]:
     table_txt = df.head(50).to_string(index=False)
     base = (
         f"Question: {question}\n\nResult table:\n{table_txt}\n\n"
-        "Answer the question in 1-3 sentences. Use ONLY numbers that appear in the table above. "
-        "Do not invent or round to new numbers."
+        "Answer in 1-2 sentences. Cite ONLY numbers that appear verbatim in the table above — "
+        "do not compute new totals, percentages, or rounded values. Prefer naming the single "
+        "headline figure that answers the question. If the table is empty, say so."
     )
     for _ in range(2):
         resp = gw.complete([{"role": "user", "content": base}], tier="interactive")
