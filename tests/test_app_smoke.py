@@ -16,7 +16,7 @@ sys.path.insert(0, str(ROOT / "streamlit_app"))
 
 pytestmark = pytest.mark.skipif(not DB.exists(), reason="DB not built; run downloaders + transform")
 
-PAGES = ["📈 Skill Demand", "💰 Salary Ranges", "🎯 Role Fit", "📊 Market Context"]
+PAGES = ["💬 Ask the Data", "📈 Skill Demand", "💰 Salary Ranges", "🎯 Role Fit", "📊 Market Context"]
 
 
 @pytest.mark.parametrize("page", PAGES)
