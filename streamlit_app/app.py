@@ -61,13 +61,24 @@ with st.sidebar:
     )
     st.divider()
     st.markdown("**Data Freshness**")
-    for src, dt in {
-        "Job Bank Postings": "monthly",
-        "Job Bank Wages": "2025",
-        "StatsCan JVWS": "Q1 2026",
-        "Indeed Trends": "monthly",
-    }.items():
-        st.caption(f"{src}: {dt}")
+
+    @st.cache_data(ttl=3600)
+    def _freshness():
+        from pipeline.insights import get_data_freshness
+        return get_data_freshness()
+
+    _LABELS = {
+        "job_postings": "Job Bank Postings",
+        "wages_job_bank": "Job Bank Wages",
+        "vacancies_statscan": "StatsCan JVWS",
+        "indeed_trends": "Indeed Trends",
+    }
+    try:
+        for table, label in _LABELS.items():
+            val = _freshness().get(table)
+            st.caption(f"{label}: {str(val)[:10] if val else 'not loaded'}")
+    except Exception:
+        st.caption("Data not loaded — run the pipeline.")
     st.divider()
     st.caption("Built by Dante (Mr. C. Mezie) · creedConsult")
 
