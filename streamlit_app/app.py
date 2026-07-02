@@ -5,7 +5,7 @@ Each insight view lives in streamlit_app/pages_impl/<page>.py as a render() fn.
 """
 import streamlit as st
 
-from pages_impl import market_context, role_fit, salary_ranges, skill_demand
+from pages_impl import ask, market_context, role_fit, salary_ranges, skill_demand
 
 st.set_page_config(
     page_title="Career Intelligence Dashboard",
@@ -37,6 +37,7 @@ h3 { font-size: 1.375rem; letter-spacing: -0.01em; }
 """, unsafe_allow_html=True)
 
 PAGES = {
+    "💬 Ask the Data": ask,
     "📈 Skill Demand": skill_demand,
     "💰 Salary Ranges": salary_ranges,
     "🎯 Role Fit": role_fit,
