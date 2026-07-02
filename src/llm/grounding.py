@@ -64,16 +64,41 @@ def grounded(prose: str, df: pd.DataFrame, allow_sums: bool = False, tol: float 
     return (len(unguarded) == 0, unguarded)
 
 
-# --- LLM-judge helpers (exercised in later phases; need a `judge` callable) ---
+# --- LLM-judge helpers (secondary to the deterministic grounded() check) ---
+
+_JSON_FENCE_RE = re.compile(r"```(?:json)?\s*(.*?)```", re.DOTALL | re.IGNORECASE)
+
 
 def faithfulness(prose: str, context: str, judge: Callable[[str], str]) -> float:
     """Claim-ratio faithfulness: supported claims / total claims (0..1).
 
-    ``judge`` is a callable (the gateway) that, given a prompt, returns text. This
-    is a secondary check; the deterministic ``grounded()`` is authoritative for
-    numbers. Implemented in Phase 2 where briefs need long-form scoring.
+    Ragas/DeepEval-style: decompose ``prose`` into atomic claims, verify each
+    against ``context`` only. ``judge`` is a callable (e.g. a gateway wrapper)
+    that maps a prompt to model text. Raises ValueError if the judge output is
+    unparseable. Secondary check — ``grounded()`` stays authoritative for numbers.
     """
-    raise NotImplementedError("faithfulness scoring is implemented in Phase 2")
+    import json as _json
+
+    prompt = (
+        "You are a strict fact-checker.\n\n"
+        f"CONTEXT (the only source of truth):\n{context}\n\n"
+        f"TEXT TO CHECK:\n{prose}\n\n"
+        "List every factual claim in the TEXT. For each, decide if it is fully "
+        "supported by the CONTEXT alone. Respond with ONLY JSON:\n"
+        '{"claims": [{"claim": "...", "supported": true|false}, ...]}'
+    )
+    raw = judge(prompt) or ""
+    m = _JSON_FENCE_RE.search(raw)
+    payload = m.group(1) if m else raw
+    try:
+        data = _json.loads(payload.strip())
+        claims = data["claims"]
+    except Exception as e:  # noqa: BLE001
+        raise ValueError(f"unparseable judge output: {raw[:200]!r}") from e
+    if not claims:
+        return 1.0
+    supported = sum(1 for c in claims if c.get("supported"))
+    return supported / len(claims)
 
 
 def verify(prose: str, judge: Callable[[str], str]) -> str:
