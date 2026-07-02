@@ -41,8 +41,11 @@ def _col(df, *needles):
 def init_db():
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     conn = duckdb.connect(str(DB_PATH))
-    for t in ["job_postings", "job_skills", "wages_job_bank", "vacancies_statscan",
-              "indeed_trends", "noc_mapping"]:
+    # job_skills_llm is dropped too: its job_id references this build's posting ids,
+    # so letting it survive a rebuild would silently mis-join. Re-run
+    # scripts/extract_skills_llm.py after transform (response-cached => cheap).
+    for t in ["job_postings", "job_skills", "job_skills_llm", "wages_job_bank",
+              "vacancies_statscan", "indeed_trends", "noc_mapping"]:
         conn.execute(f"DROP TABLE IF EXISTS {t}")
     conn.execute("""
         CREATE TABLE job_postings (

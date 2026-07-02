@@ -12,9 +12,20 @@ from pipeline.market import load_market
 
 DB_PATH = Path(__file__).resolve().parents[2] / "data" / "processed" / "career_intel.duckdb"
 _REGION = load_market().economic_region_name
-# Skill source: 'flashtext' (dictionary baseline, table job_skills) or 'llm'
-# (LLM-extracted, table job_skills_llm). See docs/llm-eval-results.md for the A/B.
-_SKILLS_TABLE = "job_skills_llm" if os.getenv("SKILLS_METHOD", "flashtext") == "llm" else "job_skills"
+# Skill source: 'llm' (LLM-extracted, table job_skills_llm — richer; the default)
+# or 'flashtext' (dictionary baseline, table job_skills). Falls back to the
+# dictionary table whenever the LLM table is missing/empty (e.g. a data refresh
+# ran without an API key). See docs/llm-eval-results.md for the A/B.
+
+
+def _skills_table(db) -> str:
+    if os.getenv("SKILLS_METHOD", "llm") == "llm":
+        try:
+            if db.execute("SELECT count(*) FROM job_skills_llm").fetchone()[0] > 0:
+                return "job_skills_llm"
+        except Exception:  # noqa: BLE001 - table absent -> baseline
+            pass
+    return "job_skills"
 
 def get_db():
     import duckdb
@@ -23,6 +34,7 @@ def get_db():
 # VIEW 1: SKILL DEMAND TRENDS
 def get_skill_demand_trends(months: int = 12, top_n: int = 20) -> pd.DataFrame:
     db = get_db()
+    _SKILLS_TABLE = _skills_table(db)
     query = f"""
     WITH monthly_skills AS (
         SELECT 
@@ -49,6 +61,7 @@ def get_skill_demand_trends(months: int = 12, top_n: int = 20) -> pd.DataFrame:
 
 def get_emerging_skills(months: int = 3, min_mentions: int = 10, growth_threshold: float = 0.5) -> pd.DataFrame:
     db = get_db()
+    _SKILLS_TABLE = _skills_table(db)
     query = f"""
     WITH monthly AS (
         SELECT 
@@ -127,6 +140,7 @@ def get_salary_by_role(min_vacancies: int = 50) -> pd.DataFrame:
 # VIEW 3: ROLE-FIT SIGNAL
 def compute_role_fit(user_skills: List[str], lookback_months: int = 3) -> Dict:
     db = get_db()
+    _SKILLS_TABLE = _skills_table(db)
     query = f"""
     WITH recent AS (
         SELECT skill_id, skill_name, category, COUNT(DISTINCT job_id) AS demand_cnt
