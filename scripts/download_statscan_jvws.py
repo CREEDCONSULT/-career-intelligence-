@@ -17,9 +17,11 @@ import zipfile
 import pandas as pd
 
 from pipeline.io_utils import http_get
+from pipeline.market import load_market
 
 TABLE_ID = "14100444"
 RAW_DIR = __import__("pathlib").Path(__file__).resolve().parents[1] / "data" / "raw" / "statscan"
+MARKET = load_market()
 
 
 def download_table_csv() -> pd.DataFrame:
@@ -39,7 +41,9 @@ def filter_toronto(df: pd.DataFrame) -> pd.DataFrame:
     geo_col = next((c for c in df.columns if c.upper() == "GEO" or "geo" in c.lower()), None)
     if geo_col is None:
         return df
-    return df[df[geo_col].fillna("").astype(str).str.contains("Toronto", case=False, na=False)]
+    return df[df[geo_col].fillna("").astype(str).str.contains(
+        MARKET.statscan_geo_contains, case=False, na=False
+    )]
 
 
 def main():

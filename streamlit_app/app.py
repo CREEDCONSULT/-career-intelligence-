@@ -5,7 +5,10 @@ Each insight view lives in streamlit_app/pages_impl/<page>.py as a render() fn.
 """
 import streamlit as st
 
-from pages_impl import ask, market_context, role_fit, salary_ranges, skill_demand
+from pages_impl import ask, brief, market_context, role_fit, salary_ranges, skill_demand
+from pipeline.market import load_market
+
+MARKET = load_market()
 
 st.set_page_config(
     page_title="Career Intelligence Dashboard",
@@ -42,13 +45,14 @@ PAGES = {
     "💰 Salary Ranges": salary_ranges,
     "🎯 Role Fit": role_fit,
     "📊 Market Context": market_context,
+    "📰 Market Brief": brief,
 }
 
 with st.sidebar:
     st.markdown(
         "<div style='text-align:center;padding:1rem 0;'>"
         "<h1 style='font-size:1.5rem;margin-bottom:0;'>Career Intelligence</h1>"
-        "<p style='color:#64748D;font-size:0.875rem;'>Toronto job market, decoded.</p></div>",
+        f"<p style='color:#64748D;font-size:0.875rem;'>{MARKET.tagline}</p></div>",
         unsafe_allow_html=True,
     )
     page = st.radio("Insights", list(PAGES.keys()), label_visibility="collapsed")
@@ -61,17 +65,28 @@ with st.sidebar:
     )
     st.divider()
     st.markdown("**Data Freshness**")
-    for src, dt in {
-        "Job Bank Postings": "monthly",
-        "Job Bank Wages": "2025",
-        "StatsCan JVWS": "Q1 2026",
-        "Indeed Trends": "monthly",
-    }.items():
-        st.caption(f"{src}: {dt}")
+
+    @st.cache_data(ttl=3600)
+    def _freshness():
+        from pipeline.insights import get_data_freshness
+        return get_data_freshness()
+
+    _LABELS = {
+        "job_postings": "Job Bank Postings",
+        "wages_job_bank": "Job Bank Wages",
+        "vacancies_statscan": "StatsCan JVWS",
+        "indeed_trends": "Indeed Trends",
+    }
+    try:
+        for table, label in _LABELS.items():
+            val = _freshness().get(table)
+            st.caption(f"{label}: {str(val)[:10] if val else 'not loaded'}")
+    except Exception:
+        st.caption("Data not loaded — run the pipeline.")
     st.divider()
     st.caption("Built by Dante (Mr. C. Mezie) · creedConsult")
 
 st.title("Career Intelligence Dashboard")
-st.caption("Transforming Toronto job postings into actionable career intelligence")
+st.caption(f"Transforming {MARKET.name} job postings into actionable career intelligence")
 
 PAGES[page].render(date_range)

@@ -16,14 +16,27 @@ must appear in the query result, or it falls back to showing the table only.
 **Measured:** 80% execution accuracy + 0 wrong numbers shown on a 20-question gold set.
 """
 
-DB_PATH = __import__("pathlib").Path(__file__).resolve().parents[2] / "data" / "processed" / "career_intel.duckdb"
+_ROOT = __import__("pathlib").Path(__file__).resolve().parents[2]
+DB_PATH = _ROOT / "data" / "processed" / "career_intel.duckdb"
+
+# Abuse/cost guards for public deployments
+SESSION_LIMIT = int(os.getenv("ASK_SESSION_LIMIT", "10"))
+DAILY_TOKEN_CAP = int(os.getenv("ASK_DAILY_TOKEN_CAP", "200000"))
 
 
 @st.cache_resource
 def _gateway():
+    from llm.cache import ResponseCache
     from llm.config import LLMConfig
     from llm.gateway import Gateway
-    return Gateway(LLMConfig.from_env())
+    cache = ResponseCache(_ROOT / "data" / "processed" / "llm_cache.duckdb")
+    return Gateway(LLMConfig.from_env(), cache=cache)
+
+
+@st.cache_resource
+def _usage():
+    from llm.usage import DailyUsage
+    return DailyUsage(_ROOT / "data" / "processed" / "llm_usage.json")
 
 
 def render(date_range: str = "Last 12 months") -> None:
@@ -47,14 +60,28 @@ def render(date_range: str = "Last 12 months") -> None:
     if not question:
         return
 
+    # --- guards: per-session question cap + shared daily token cap ---
+    asked = st.session_state.get("ask_count", 0)
+    if asked >= SESSION_LIMIT:
+        st.warning(f"Session limit reached ({SESSION_LIMIT} questions). Refresh to start a new session.")
+        return
+    usage = _usage()
+    if usage.today() >= DAILY_TOKEN_CAP:
+        st.warning("The daily usage cap for this demo has been reached — please come back tomorrow.")
+        return
+
     from llm.features.ask import ask
 
+    gw = _gateway()
+    tokens_before = gw.tokens_used
     with st.spinner("Writing SQL, running it, and checking the answer…"):
         con = duckdb.connect(str(DB_PATH), read_only=True)
         try:
-            ans = ask(question, con, _gateway())
+            ans = ask(question, con, gw)
         finally:
             con.close()
+    st.session_state["ask_count"] = asked + 1
+    usage.add(gw.tokens_used - tokens_before)
 
     if ans.error and ans.table is None:
         st.error(f"Couldn't answer that one (SQL failed after retries): {ans.error}")

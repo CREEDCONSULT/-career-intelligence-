@@ -6,7 +6,26 @@ import pandas as pd
 from pathlib import Path
 from typing import Dict, List
 
+import os
+
+from pipeline.market import load_market
+
 DB_PATH = Path(__file__).resolve().parents[2] / "data" / "processed" / "career_intel.duckdb"
+_REGION = load_market().economic_region_name
+# Skill source: 'llm' (LLM-extracted, table job_skills_llm — richer; the default)
+# or 'flashtext' (dictionary baseline, table job_skills). Falls back to the
+# dictionary table whenever the LLM table is missing/empty (e.g. a data refresh
+# ran without an API key). See docs/llm-eval-results.md for the A/B.
+
+
+def _skills_table(db) -> str:
+    if os.getenv("SKILLS_METHOD", "llm") == "llm":
+        try:
+            if db.execute("SELECT count(*) FROM job_skills_llm").fetchone()[0] > 0:
+                return "job_skills_llm"
+        except Exception:  # noqa: BLE001 - table absent -> baseline
+            pass
+    return "job_skills"
 
 def get_db():
     import duckdb
@@ -15,6 +34,7 @@ def get_db():
 # VIEW 1: SKILL DEMAND TRENDS
 def get_skill_demand_trends(months: int = 12, top_n: int = 20) -> pd.DataFrame:
     db = get_db()
+    _SKILLS_TABLE = _skills_table(db)
     query = f"""
     WITH monthly_skills AS (
         SELECT 
@@ -23,8 +43,8 @@ def get_skill_demand_trends(months: int = 12, top_n: int = 20) -> pd.DataFrame:
             skill_name,
             category,
             COUNT(DISTINCT job_id) AS postings_count
-        FROM job_skills
-        WHERE posted_date >= (SELECT max(posted_date) FROM job_skills) - INTERVAL '{months} months'
+        FROM {_SKILLS_TABLE}
+        WHERE posted_date >= (SELECT max(posted_date) FROM {_SKILLS_TABLE}) - INTERVAL '{months} months'
         GROUP BY 1, 2, 3, 4
     ),
     ranked AS (
@@ -41,6 +61,7 @@ def get_skill_demand_trends(months: int = 12, top_n: int = 20) -> pd.DataFrame:
 
 def get_emerging_skills(months: int = 3, min_mentions: int = 10, growth_threshold: float = 0.5) -> pd.DataFrame:
     db = get_db()
+    _SKILLS_TABLE = _skills_table(db)
     query = f"""
     WITH monthly AS (
         SELECT 
@@ -48,8 +69,8 @@ def get_emerging_skills(months: int = 3, min_mentions: int = 10, growth_threshol
             skill_id,
             skill_name,
             COUNT(DISTINCT job_id) AS cnt
-        FROM job_skills
-        WHERE posted_date >= (SELECT max(posted_date) FROM job_skills) - INTERVAL '{months*2} months'
+        FROM {_SKILLS_TABLE}
+        WHERE posted_date >= (SELECT max(posted_date) FROM {_SKILLS_TABLE}) - INTERVAL '{months*2} months'
         GROUP BY 1, 2, 3
     ),
     pivoted AS (
@@ -84,7 +105,7 @@ def get_salary_by_role(min_vacancies: int = 50) -> pd.DataFrame:
             MAX(max_wage) AS max_wage,
             COUNT(*) AS wage_records
         FROM wages_job_bank
-        WHERE region = 'Toronto'
+        WHERE region = '{_REGION}'
         GROUP BY noc_code
     ),
     vacancies AS (
@@ -93,7 +114,7 @@ def get_salary_by_role(min_vacancies: int = 50) -> pd.DataFrame:
             SUM(vacancy_count) AS total_vacancies,
             AVG(avg_offered_wage) AS avg_offered_wage
         FROM vacancies_statscan
-        WHERE region = 'Toronto'
+        WHERE region = '{_REGION}'
         GROUP BY noc_code
     ),
     noc_meta AS (
@@ -119,11 +140,12 @@ def get_salary_by_role(min_vacancies: int = 50) -> pd.DataFrame:
 # VIEW 3: ROLE-FIT SIGNAL
 def compute_role_fit(user_skills: List[str], lookback_months: int = 3) -> Dict:
     db = get_db()
+    _SKILLS_TABLE = _skills_table(db)
     query = f"""
     WITH recent AS (
         SELECT skill_id, skill_name, category, COUNT(DISTINCT job_id) AS demand_cnt
-        FROM job_skills
-        WHERE posted_date >= (SELECT max(posted_date) FROM job_skills) - INTERVAL '{lookback_months} months'
+        FROM {_SKILLS_TABLE}
+        WHERE posted_date >= (SELECT max(posted_date) FROM {_SKILLS_TABLE}) - INTERVAL '{lookback_months} months'
         GROUP BY skill_id, skill_name, category
     ),
     total_postings AS (
@@ -176,7 +198,7 @@ def compute_role_fit(user_skills: List[str], lookback_months: int = 3) -> Dict:
 
 def _generate_recommendation(gap_skills: pd.DataFrame) -> str:
     if gap_skills.empty:
-        return "Your skills align well with current Toronto market demand!"
+        return f"Your skills align well with current {load_market().name} market demand!"
     top_gap = gap_skills.iloc[0]
     cat = top_gap.get("category", "")
     name = top_gap.get("skill_name", "")
@@ -210,11 +232,11 @@ def get_market_context() -> Dict:
     wage_growth = _metric_series(db, "wage_growth")                      # Canada
     ai_share = _metric_series(db, "ai_share", monthly_avg=True)          # Canada
 
-    vacancy_query = """
+    vacancy_query = f"""
     SELECT year, quarter, SUM(vacancy_count) AS total_vacancies,
            AVG(avg_offered_wage) AS avg_wage
     FROM vacancies_statscan
-    WHERE region = 'Toronto'
+    WHERE region = '{_REGION}'
     GROUP BY year, quarter
     ORDER BY year, quarter
     """
