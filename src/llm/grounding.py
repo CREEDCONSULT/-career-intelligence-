@@ -101,6 +101,16 @@ def faithfulness(prose: str, context: str, judge: Callable[[str], str]) -> float
     return supported / len(claims)
 
 
-def verify(prose: str, judge: Callable[[str], str]) -> str:
-    """Chain-of-Verification 4-step regeneration. Implemented in Phase 5 (advisor)."""
-    raise NotImplementedError("CoVe verify is implemented in Phase 5")
+def verify(prose: str, context: str, judge: Callable[[str], str], threshold: float = 0.9) -> str:
+    """Chain-of-Verification: fact-check the draft against context; if faithfulness
+    is below ``threshold``, regenerate using only supported facts. Returns the
+    verified prose. ``judge`` maps a prompt to model text (a gateway wrapper)."""
+    score = faithfulness(prose, context, judge)
+    if score >= threshold:
+        return prose
+    rewrite_prompt = (
+        "Rewrite the following answer so that every statement is fully supported by the "
+        "CONTEXT. Remove or correct anything not grounded in it. Keep it concise.\n\n"
+        f"CONTEXT:\n{context}\n\nANSWER TO FIX:\n{prose}\n\nReturn only the corrected answer."
+    )
+    return (judge(rewrite_prompt) or prose).strip()
