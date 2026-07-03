@@ -17,9 +17,10 @@ consulting.
 | View | Question it answers | How |
 |------|---------------------|-----|
 | **💬 Ask the Data** | Any plain-English question about the market | Grounded text-to-SQL: LLM writes a SELECT, it's validated + executed, and the answer is verified against the result (80% exec accuracy, **0 wrong numbers shown**) |
+| **🧠 Career Advisor** | "I'm a cook — what pays more?" open-ended guidance | Plan → grounded-SQL fetch → compose → fact-check; refuses out-of-scope (5/5), 0.91 faithfulness; every answer shows its data sources |
 | **📈 Skill Demand** | Which skills are most in demand, and what's emerging? | 12 months of Job Bank postings, dual extraction (dictionary + LLM) |
 | **💰 Salary Ranges** | What does each role pay (hourly-equivalent)? | Job Bank wages + StatsCan JVWS, vacancy-weighted |
-| **🎯 Role Fit** | Given my skills, where am I competitive? | Skill-overlap scoring against live demand |
+| **🎯 Role Fit** | Given my skills or resume, where am I competitive? | Skill-overlap scoring **and** semantic profile→role matching (embedded Qdrant hybrid, 8/8 top-5) |
 | **📊 Market Context** | Hiring momentum, vacancies, wage growth, AI demand | Indeed Hiring Lab + StatsCan time series |
 | **📰 Market Brief** | "What happened this month?" — publishable narrative | LLM-narrated over pipeline-computed figures; faithfulness 0.94, 100% numeric grounding |
 
@@ -63,9 +64,11 @@ downloaders ──> data/raw ──> transform.py ──> DuckDB ──> insight
  CKAN/WDS/GitHub             (idempotent)       │
                                                 └──> src/llm/  (LiteLLM gateway · SQLGlot guard ·
                                                      numeric grounding · response cache · eval harness)
-                                                       ├─ ask     (grounded text-to-SQL Q&A)
-                                                       ├─ brief   (grounded monthly narrative)
-                                                       └─ skills  (batched Haiku extraction)
+                                                       ├─ ask         (grounded text-to-SQL Q&A)
+                                                       ├─ advisor     (plan→fetch→compose→verify chat)
+                                                       ├─ brief       (grounded monthly narrative)
+                                                       ├─ skills_llm  (batched Haiku extraction)
+                                                       └─ role_match  (embedded Qdrant hybrid)
 ```
 
 - **`src/pipeline/`** — data package: io_utils, market config, NOC mapper, taxonomy, matcher, salary, insights.

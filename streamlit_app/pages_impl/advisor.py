@@ -5,7 +5,7 @@ from pathlib import Path
 import duckdb
 import streamlit as st
 
-from ._shared import data_meta, methodology
+from ._shared import data_meta, methodology, money_safe
 
 METHODOLOGY = """
 **How it works:** Your question is turned into specific data questions, each answered by executed SQL
@@ -47,7 +47,7 @@ def render(date_range: str = "Last 12 months") -> None:
     history = st.session_state.setdefault("advisor_history", [])
     for msg in history:
         with st.chat_message(msg["role"]):
-            st.markdown(msg["content"])
+            st.markdown(money_safe(msg["content"]))
             for src in msg.get("sources", []):
                 with st.expander(f"🔎 Source: {src['q'][:60]}"):
                     st.code(src["sql"] or "", language="sql")
@@ -79,7 +79,7 @@ def render(date_range: str = "Last 12 months") -> None:
                 adv = advise(prompt, con, gw)
             finally:
                 con.close()
-        st.markdown(adv.answer)
+        st.markdown(money_safe(adv.answer))
         sources = [{"q": s.question, "sql": s.sql} for s in adv.sources]
         for src in sources:
             with st.expander(f"🔎 Source: {src['q'][:60]}"):
