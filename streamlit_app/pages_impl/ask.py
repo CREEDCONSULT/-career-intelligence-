@@ -4,7 +4,7 @@ import os
 import duckdb
 import streamlit as st
 
-from ._shared import data_meta, methodology
+from ._shared import data_meta, methodology, money_safe
 
 METHODOLOGY = """
 **How it works:** Your question is sent to an LLM with the database schema (never the data). The
@@ -90,7 +90,7 @@ def render(date_range: str = "Last 12 months") -> None:
         return
 
     if ans.grounded and ans.prose:
-        st.success(ans.prose)
+        st.success(money_safe(ans.prose))
     elif ans.prose:
         st.warning("Answer shown as data only (the drafted summary couldn't be verified against the result).")
 

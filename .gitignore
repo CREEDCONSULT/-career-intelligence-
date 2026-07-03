@@ -37,3 +37,5 @@ __pycache__/
 # ...but DO commit the small built demo database so the app runs on a fresh clone
 !data/processed/
 !data/processed/career_intel.duckdb
+
+data/processed/qdrant/

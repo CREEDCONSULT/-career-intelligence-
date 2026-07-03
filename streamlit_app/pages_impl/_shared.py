@@ -28,6 +28,11 @@ def methodology(markdown_text: str) -> None:
         st.markdown(markdown_text)
 
 
+def money_safe(text: str) -> str:
+    """Escape ``$`` so Streamlit doesn't render '$20-$30' as LaTeX math."""
+    return (text or "").replace("$", "\\$")
+
+
 def style_fig(fig, accent: str = "ink"):
     fig.update_layout(
         plot_bgcolor="rgba(0,0,0,0)",
