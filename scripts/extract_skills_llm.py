@@ -62,8 +62,19 @@ def main():
                 "category": item.category, "posted_date": posted_date, "noc_code": noc_code,
             })
 
-    # Write phase (brief write lock only for the table swap)
-    wcon = duckdb.connect(str(DB))
+    # Write phase (brief write lock only for the table swap). Retry hard: losing a
+    # paid extraction to a transient cloud-sync file lock is unacceptable.
+    import time
+    wcon = None
+    for attempt in range(10):
+        try:
+            wcon = duckdb.connect(str(DB))
+            break
+        except Exception as e:  # noqa: BLE001
+            print(f"  DB locked ({e}); retry {attempt + 1}/10 in 3s...")
+            time.sleep(3)
+    if wcon is None:
+        raise SystemExit("Could not open DB for writing after retries.")
     wcon.execute("DROP TABLE IF EXISTS job_skills_llm")
     wcon.execute("""
         CREATE TABLE job_skills_llm (
