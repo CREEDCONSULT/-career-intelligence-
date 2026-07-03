@@ -1,5 +1,23 @@
 # LLM Layer — Eval Results
 
+## Phase 4: Resume → Role Match (2026-07-03)
+
+Semantic profile→occupation matching over a 319-occupation corpus (NOC title + top-10
+LLM-extracted skills + example posting titles), embedded Qdrant + fastembed dense
+(bge-small) + BM25 hybrid fused via RRF, then blended with demand signals.
+
+| Metric | Result | Gate |
+|--------|--------|------|
+| Top-5 hit rate (8 test profiles) | **8/8 (100%)** | ≥6/8 ✓ |
+| Top-1 correct | **8/8** — every profile's #1 is a correct occupation | — |
+| Runtime | local (no API key, no server); index builds in ~seconds | — |
+
+Test profiles spanned cook, software developer, nurse, retail sales, electrician,
+accountant, truck driver, ECE. Each ranked the right occupation first (e.g. "python
+developer, SQL, data pipelines" → Data scientists; "AZ license, long-haul" → Transport
+truck drivers). Deployment: embedded Qdrant + ONNX fastembed keeps the app installable
+on Streamlit Cloud/Railway with no vector-DB service and no torch dependency.
+
 ## Phase 3: LLM Skill Extraction A/B (2026-07-02)
 
 Full run over all 5,792 distinct job titles in the 12-month DB (97,227 postings),

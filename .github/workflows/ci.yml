@@ -16,6 +16,12 @@ jobs:
           python-version: "3.11"
           cache: pip
 
+      - name: Cache fastembed models
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/fastembed
+          key: fastembed-bge-small-bm25-v1
+
       - name: Install
         run: pip install -e ".[dev]"
 
