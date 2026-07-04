@@ -256,6 +256,26 @@ def get_market_context() -> Dict:
         },
     }
 
+def get_dataset_overview() -> Dict:
+    """Headline coverage stats for the 'what data is here' panel."""
+    db = get_db()
+
+    def one(sql):
+        try:
+            return db.execute(sql).fetchone()[0]
+        except Exception:
+            return None
+
+    return {
+        "postings": one("SELECT count(*) FROM job_postings"),
+        "date_min": one("SELECT min(posted_date) FROM job_postings WHERE posted_date IS NOT NULL"),
+        "date_max": one("SELECT max(posted_date) FROM job_postings WHERE posted_date IS NOT NULL"),
+        "occupations": one("SELECT count(DISTINCT noc_code) FROM job_postings WHERE noc_code IS NOT NULL AND noc_code != ''"),
+        "skills": one(f"SELECT count(DISTINCT skill_name) FROM {_skills_table(db)}"),
+        "wage_roles": one("SELECT count(DISTINCT noc_code) FROM wages_job_bank"),
+    }
+
+
 # DATA FRESHNESS & CONFIDENCE
 def get_data_freshness() -> Dict:
     db = get_db()

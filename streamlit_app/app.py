@@ -5,7 +5,9 @@ Each insight view lives in streamlit_app/pages_impl/<page>.py as a render() fn.
 """
 import streamlit as st
 
-from pages_impl import advisor, ask, brief, market_context, role_fit, salary_ranges, skill_demand
+from pages_impl import (
+    advisor, ask, brief, market_context, resume_studio, role_fit, salary_ranges, skill_demand,
+)
 from pipeline.market import load_market
 
 MARKET = load_market()
@@ -45,6 +47,7 @@ PAGES = {
     "📈 Skill Demand": skill_demand,
     "💰 Salary Ranges": salary_ranges,
     "🎯 Role Fit": role_fit,
+    "📄 Resume Studio": resume_studio,
     "📊 Market Context": market_context,
     "📰 Market Brief": brief,
 }
