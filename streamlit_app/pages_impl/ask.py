@@ -39,23 +39,64 @@ def _usage():
     return DailyUsage(_ROOT / "data" / "processed" / "llm_usage.json")
 
 
+EXAMPLES = [
+    "What are the top 10 skills by number of postings?",
+    "Which occupations have the highest median wage?",
+    "Which skills are growing fastest month over month?",
+    "How many job vacancies are there in Toronto?",
+    "What is the AI share of postings, and is it rising?",
+    "Which roles have the most openings right now?",
+]
+
+
+@st.cache_data(ttl=3600)
+def _overview():
+    from pipeline.insights import get_dataset_overview
+    return get_dataset_overview()
+
+
+def _overview_panel() -> None:
+    try:
+        ov = _overview()
+    except Exception:
+        return
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Job postings", f"{ov['postings']:,}" if ov.get("postings") else "—")
+    c2.metric("Occupations", f"{ov['occupations']:,}" if ov.get("occupations") else "—")
+    c3.metric("Distinct skills", f"{ov['skills']:,}" if ov.get("skills") else "—")
+    span = f"{str(ov.get('date_min'))[:7]} → {str(ov.get('date_max'))[:7]}" if ov.get("date_min") else "—"
+    c4.metric("Coverage", span)
+    st.markdown(
+        "<div style='background:#F0F4F8;border:1px solid #E5EDF5;border-radius:6px;padding:10px 14px;"
+        "font-size:0.85rem;color:#273951;margin:4px 0 8px;'>"
+        "<strong>What you can ask about:</strong> in-demand <em>skills</em>, <em>salaries</em> by "
+        "occupation, job <em>vacancies</em>, hiring <em>momentum</em>, and the <em>AI share</em> of "
+        "postings — all for the Toronto / GTA market.</div>",
+        unsafe_allow_html=True,
+    )
+
+
 def render(date_range: str = "Last 12 months") -> None:
     st.header("Ask the Data")
     st.caption("Ask a question about the Toronto job market in plain English")
     data_meta("High", "Grounded text-to-SQL · numbers come from the database, never the model")
     methodology(METHODOLOGY)
 
+    _overview_panel()
+
     if not (os.getenv("ANTHROPIC_API_KEY") or os.getenv("OPENAI_API_KEY")):
         st.info("Set `ANTHROPIC_API_KEY` (or `OPENAI_API_KEY`) in your environment to enable Ask.")
         return
 
-    examples = [
-        "What are the top 5 skills by number of postings?",
-        "Which occupations have the highest median wage?",
-        "What is the average AI share of postings in Canada?",
-    ]
-    st.caption("Try: " + " · ".join(f"*{e}*" for e in examples))
-    question = st.text_input("Your question", placeholder=examples[0])
+    st.markdown("**Try one of these — or type your own:**")
+    cols = st.columns(2)
+    for i, ex in enumerate(EXAMPLES):
+        if cols[i % 2].button(ex, key=f"ask_ex_{i}", use_container_width=True):
+            st.session_state["ask_q"] = ex
+    question = st.text_input(
+        "Your question", key="ask_q",
+        placeholder="e.g. Which skills are growing fastest in Toronto?",
+    )
 
     if not question:
         return

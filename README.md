@@ -21,6 +21,7 @@ consulting.
 | **📈 Skill Demand** | Which skills are most in demand, and what's emerging? | 12 months of Job Bank postings, dual extraction (dictionary + LLM) |
 | **💰 Salary Ranges** | What does each role pay (hourly-equivalent)? | Job Bank wages + StatsCan JVWS, vacancy-weighted |
 | **🎯 Role Fit** | Given my skills or resume, where am I competitive? | Skill-overlap scoring **and** semantic profile→role matching (embedded Qdrant hybrid, 8/8 top-5) |
+| **📄 Resume Studio** | Upload a resume → fit, review, tailor, cover letter | Token-free PDF/DOCX parsing (markitdown); grounded in demand/salary; never fabricates experience |
 | **📊 Market Context** | Hiring momentum, vacancies, wage growth, AI demand | Indeed Hiring Lab + StatsCan time series |
 | **📰 Market Brief** | "What happened this month?" — publishable narrative | LLM-narrated over pipeline-computed figures; faithfulness 0.94, 100% numeric grounding |
 
