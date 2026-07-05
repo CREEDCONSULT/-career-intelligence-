@@ -37,7 +37,18 @@ h3 { font-size: 1.375rem; letter-spacing: -0.01em; }
 .confidence-high { background: rgba(21,190,83,0.15); color: #108C3D; border: 1px solid rgba(21,190,83,0.3); }
 .confidence-medium { background: rgba(212,168,13,0.15); color: #9B6829; border: 1px solid #D4A80D; }
 .confidence-low { background: rgba(234,34,97,0.15); color: #C41A4D; border: 1px solid #EA2261; }
-#MainMenu { visibility: hidden; } footer { visibility: hidden; } header { visibility: hidden; }
+/* Hide the deploy/status toolbar actions + footer, keep the header so the sidebar
+   open/close controls (and the mobile hamburger) stay reachable. */
+footer { visibility: hidden; }
+[data-testid="stToolbarActions"] { display: none; }
+header[data-testid="stHeader"] { background: transparent; }
+/* Keep the sidebar expand ("open menu") and collapse controls always visible + on-brand */
+[data-testid="stExpandSidebarButton"], [data-testid="stSidebarCollapseButton"] {
+    visibility: visible !important; opacity: 1 !important;
+}
+[data-testid="stExpandSidebarButton"] button, [data-testid="stSidebarCollapseButton"] button {
+    color: #3B2F9E !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
