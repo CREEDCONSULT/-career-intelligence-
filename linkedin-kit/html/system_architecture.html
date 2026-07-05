@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>System Architecture — Career Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#071018;--card:#0B1520;--card2:#111C2A;--line:#29384C;--gold:#D5B56E;--cream:#F7F1E8;--slate:#AEB9C8;--blue:#7CB4FF;--green:#8EE0B2;--red:#FF9A9A;--mono:'JetBrains Mono',monospace;--sans:'Inter',system-ui,sans-serif}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--sans);background:var(--bg);color:var(--cream);line-height:1.55;
+    background-image:radial-gradient(900px 500px at 82% -6%,rgba(124,180,255,.07),transparent 60%),linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+    background-size:100% 100%,48px 48px,48px 48px;background-blend-mode:normal,soft-light,soft-light}
+  .wrap{max-width:980px;margin:0 auto;padding:64px 24px}
+  .eyebrow{font-family:var(--mono);font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+  h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:800;letter-spacing:-.02em;margin:12px 0}
+  h1 .g{color:var(--gold)}
+  .sub{color:var(--slate);max-width:700px}
+  h2{font-size:1.4rem;font-weight:700;margin:44px 0 14px}
+  .stack{display:flex;flex-direction:column;gap:12px}
+  .layer{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;display:flex;gap:16px;align-items:flex-start}
+  .layer .n{font-family:var(--mono);color:var(--gold);font-weight:600;min-width:32px}
+  .layer h3{font-size:1.05rem} .layer p{color:var(--slate);font-size:.92rem;margin-top:3px}
+  .layer.ai{border-left:3px solid var(--blue)}
+  .layer.eval{border-left:3px solid var(--green)}
+  .layer.prod{border-left:3px solid var(--gold)}
+  .badge{font-family:var(--mono);font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;color:var(--blue);border:1px solid rgba(124,180,255,.4);padding:2px 7px;border-radius:999px;margin-left:8px}
+  .badge.g{color:var(--green);border-color:rgba(142,224,178,.4)}
+
+  /* flow */
+  .flow{display:flex;flex-direction:column;gap:0;margin-top:10px}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px}
+  .step .k{font-family:var(--mono);font-size:.72rem;color:var(--gold);min-width:30px}
+  .step .txt{font-size:.95rem} .step .txt b{color:var(--cream)} .step small{color:var(--slate);display:block;font-size:.8rem;margin-top:2px}
+  .step.code{border-color:rgba(124,180,255,.35)} .step.chk{border-color:rgba(142,224,178,.35)}
+  .arw{align-self:center;color:var(--gold);font-family:var(--mono);padding:6px 0;font-size:1.1rem}
+  .fork{display:flex;gap:12px;margin-top:8px}
+  .out{flex:1;border-radius:12px;padding:12px 14px;font-family:var(--mono);font-size:.82rem;border:1px solid var(--line)}
+  .out.ok{border-color:rgba(142,224,178,.4);color:var(--green)}
+  .out.no{border-color:rgba(255,154,154,.4);color:var(--red)}
+  .rule{background:var(--card2);border:1px solid var(--gold);border-radius:14px;padding:18px 20px;margin:18px 0;font-size:1.15rem;font-weight:600}
+  .gate{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+  .chip{font-family:var(--mono);font-size:.72rem;color:var(--slate);border:1px solid var(--line);border-radius:999px;padding:6px 12px}
+  .chip .g{color:var(--green)}
+  footer{color:var(--slate);font-family:var(--mono);font-size:.82rem;margin-top:46px;border-top:1px solid var(--line);padding-top:20px}
+  a{color:var(--blue);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="eyebrow">System architecture</span>
+  <h1>Six layers. <span class="g">One rule.</span></h1>
+  <p class="sub">The model lives in exactly one layer. Everything around it exists to make its answers
+  trustworthy. That boundary is the product.</p>
+
+  <h2>The stack</h2>
+  <div class="stack">
+    <div class="layer"><div class="n">01</div><div><h3>Data</h3><p>Job Bank · Statistics Canada · Indeed Hiring Lab · Lightcast · NOC 2021 → one clean, queryable store (97,227 postings, 5,148 skills).</p></div></div>
+    <div class="layer"><div class="n">02</div><div><h3>Analytics</h3><p>Raw signals → skills in demand, salary ranges, role demand, hiring trends.</p></div></div>
+    <div class="layer ai"><div class="n">03</div><div><h3>AI — guarded <span class="badge">no-invent</span></h3><p>Provider-agnostic gateway. Writes validated SQL, narrates only real results, refuses when unsupported.</p></div></div>
+    <div class="layer"><div class="n">04</div><div><h3>UX</h3><p>Eight modules — Ask, Career Advisor, Skill Demand, Salary Ranges, Role Fit, Resume Studio, Market Context, Market Brief.</p></div></div>
+    <div class="layer eval"><div class="n">05</div><div><h3>Evaluation <span class="badge g">measured</span></h3><p>Execution accuracy · faithfulness · refusal behaviour — real, reproducible numbers.</p></div></div>
+    <div class="layer prod"><div class="n">06</div><div><h3>Productization</h3><p>Open demo → gated beta → personal layer → coach/institution → expansion → API.</p></div></div>
+  </div>
+
+  <h2>The one rule</h2>
+  <div class="rule">The model does not get to invent a number.</div>
+
+  <h2>How a question becomes a grounded answer</h2>
+  <div class="flow">
+    <div class="step"><span class="k">01</span><div class="txt"><b>You ask a question</b><small>"Which occupations pay the most in Toronto?"</small></div></div>
+    <div class="arw">↓</div>
+    <div class="step code"><span class="k">02</span><div class="txt"><b>The LLM writes SQL</b><small>plain English → a query, not a guess</small></div></div>
+    <div class="arw">↓</div>
+    <div class="step chk"><span class="k">03</span><div class="txt"><b>Validate</b> — SELECT-only, safe, well-formed<small>rejected before it can run if it isn't</small></div></div>
+    <div class="arw">↓</div>
+    <div class="step"><span class="k">04</span><div class="txt"><b>Execute read-only</b> against the data<small>row-capped, on a read-only connection</small></div></div>
+    <div class="arw">↓</div>
+    <div class="step code"><span class="k">05</span><div class="txt"><b>The LLM narrates</b> the result<small>explains only the numbers that came back</small></div></div>
+    <div class="arw">↓</div>
+    <div class="step chk"><span class="k">06</span><div class="txt"><b>Grounding check</b> — every number in the prose must exist in the result set<small>unsupported figures are stripped</small></div></div>
+    <div class="fork">
+      <div class="out ok">✓ grounded → answer + the SQL, shown</div>
+      <div class="out no">✗ unsupported → refuse / show the table only</div>
+    </div>
+  </div>
+
+  <h2>Trust, measured</h2>
+  <div class="gate">
+    <span class="chip">Text-to-SQL accuracy <span class="g">80%</span></span>
+    <span class="chip">Invented numbers shown <span class="g">0</span></span>
+    <span class="chip">Brief faithfulness <span class="g">0.94</span></span>
+    <span class="chip">Out-of-scope refusals <span class="g">5/5</span></span>
+    <span class="chip">Résumé→role top-5 <span class="g">8/8</span></span>
+    <span class="chip">Tests in CI <span class="g">100 ✓</span></span>
+  </div>
+
+  <footer>Career Intelligence — system architecture ·
+    <a href="https://github.com/CREEDCONSULT/-career-intelligence-" target="_blank">read the code</a> ·
+    <a href="https://career-intelligence-production.up.railway.app/" target="_blank">live app</a> ·
+    Mesomachukwu Mezie-Akabudu · creedConsult</footer>
+</div>
+</body>
+</html>
