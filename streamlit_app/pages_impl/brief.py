@@ -3,7 +3,7 @@ from pathlib import Path
 
 import streamlit as st
 
-from ._shared import data_meta, methodology, money_safe
+from ._shared import data_meta, lead_ctas, methodology, money_safe
 
 METHODOLOGY = """
 **How it's made:** Once a month the pipeline computes the section figures (postings, skills,
@@ -31,3 +31,11 @@ def render(date_range: str = "Last 12 months") -> None:
     md = (BRIEFS_DIR / f"{pick}.md").read_text(encoding="utf-8")
     st.markdown(money_safe(md))
     st.download_button("Download Markdown", md, file_name=f"market-brief-{pick}.md")
+
+    st.divider()
+    c1, c2 = st.columns([2, 1])
+    with c1:
+        st.markdown("#### Get next month's brief in your inbox")
+        st.caption("A fresh, data-grounded read on the Toronto job market — once a month, free.")
+    with c2:
+        lead_ctas(compact=False)
