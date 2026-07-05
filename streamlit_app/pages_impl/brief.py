@@ -3,7 +3,7 @@ from pathlib import Path
 
 import streamlit as st
 
-from ._shared import data_meta, lead_ctas, methodology, money_safe
+from ._shared import data_meta, lead_form, methodology, money_safe
 
 METHODOLOGY = """
 **How it's made:** Once a month the pipeline computes the section figures (postings, skills,
@@ -38,4 +38,4 @@ def render(date_range: str = "Last 12 months") -> None:
         st.markdown("#### Get next month's brief in your inbox")
         st.caption("A fresh, data-grounded read on the Toronto job market — once a month, free.")
     with c2:
-        lead_ctas(compact=False)
+        lead_form(context="brief", compact=False)

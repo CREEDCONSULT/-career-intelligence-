@@ -99,8 +99,8 @@ with st.sidebar:
     except Exception:
         st.caption("Data not loaded — run the pipeline.")
     st.divider()
-    from pages_impl._shared import lead_ctas
-    lead_ctas(compact=True)
+    from pages_impl._shared import lead_form
+    lead_form(context="sidebar", compact=True)
     st.divider()
     st.caption("Built by Mesomachukwu Mezie-Akabudu · creedConsult")
 

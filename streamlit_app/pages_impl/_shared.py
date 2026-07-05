@@ -1,6 +1,9 @@
 """Shared rendering helpers for dashboard pages."""
+import csv
 import os
-from urllib.parse import quote
+import re
+from datetime import datetime
+from pathlib import Path
 
 import streamlit as st
 
@@ -37,50 +40,78 @@ def money_safe(text: str) -> str:
 
 
 # --- Lead capture -----------------------------------------------------------
-# All destinations are env-configurable. Set any of these to activate the CTAs:
-#   BRIEF_SIGNUP_URL   — newsletter/form for the monthly Market Brief
-#   WAITLIST_URL       — beta waitlist form
-#   PILOT_BOOKING_URL  — booking/form for teams, coaches, schools
-#   CONTACT_EMAIL      — universal fallback: CTAs become pre-filled mailto links
+# In-app form captures name + email (no mail client needed). Submissions are
+# relayed to the owner via a form endpoint and backed up to a local CSV.
+#   LEAD_WEBHOOK_URL  — a form-relay endpoint (Formspree/Web3Forms/Google Apps
+#                       Script/etc.) that receives JSON {name,email,interest}.
+#   CONTACT_EMAIL     — if no webhook is set, defaults to FormSubmit's free,
+#                       no-account relay: https://formsubmit.co/ajax/<email>
+#                       (owner clicks a one-time activation email to start).
 
-def _lead_targets():
-    return {
-        "brief": os.getenv("BRIEF_SIGNUP_URL", "").strip(),
-        "waitlist": os.getenv("WAITLIST_URL", "").strip(),
-        "pilot": os.getenv("PILOT_BOOKING_URL", "").strip(),
-        "email": os.getenv("CONTACT_EMAIL", "").strip(),
+_LEADS_CSV = Path(__file__).resolve().parents[2] / "data" / "processed" / "leads.csv"
+_EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+
+def _lead_webhook() -> str:
+    url = os.getenv("LEAD_WEBHOOK_URL", "").strip()
+    if url:
+        return url
+    email = os.getenv("CONTACT_EMAIL", "").strip()
+    return f"https://formsubmit.co/ajax/{email}" if email else ""
+
+
+def _save_lead_local(name: str, email: str, interest: str) -> None:
+    try:
+        _LEADS_CSV.parent.mkdir(parents=True, exist_ok=True)
+        new = not _LEADS_CSV.exists()
+        with open(_LEADS_CSV, "a", newline="", encoding="utf-8") as f:
+            w = csv.writer(f)
+            if new:
+                w.writerow(["timestamp_utc", "name", "email", "interest"])
+            w.writerow([datetime.utcnow().isoformat(timespec="seconds"), name, email, interest])
+    except Exception:  # noqa: BLE001 - backup is best-effort
+        pass
+
+
+def _relay_lead(name: str, email: str, interest: str) -> bool:
+    hook = _lead_webhook()
+    if not hook:
+        return False
+    payload = {
+        "name": name, "email": email, "interest": interest,
+        "_subject": f"[Career Intelligence] New lead — {interest}",
+        "_captcha": "false", "_template": "table",
     }
+    try:
+        import requests
+        r = requests.post(hook, json=payload, timeout=12,
+                          headers={"Accept": "application/json"})
+        return r.ok
+    except Exception:  # noqa: BLE001 - never break the UI on a network hiccup
+        return False
 
 
-def _cta_url(direct: str, email: str, subject: str) -> str | None:
-    if direct:
-        return direct
-    if email:
-        return f"mailto:{email}?subject={quote(subject)}"
-    return None
-
-
-def lead_ctas(compact: bool = True) -> None:
-    """Render the lead-capture CTAs (brief · waitlist · teams/schools).
-
-    Renders only the CTAs that are configured (dedicated URL or mailto fallback).
-    If nothing is configured, shows a quiet, public-safe placeholder line.
-    """
-    t = _lead_targets()
-    brief = _cta_url(t["brief"], t["email"], "Subscribe — monthly Toronto job market brief")
-    waitlist = _cta_url(t["waitlist"], t["email"], "Join the beta waitlist")
-    pilot = _cta_url(t["pilot"], t["email"], "Pilot inquiry — teams, coaches & schools")
-
+def lead_form(context: str = "sidebar", compact: bool = True) -> None:
+    """Render a name + email capture form. Works without a mail client."""
     st.markdown("**📬 Stay in the loop**" if compact else "### 📬 Stay in the loop")
-    if not any([brief, waitlist, pilot]):
-        st.caption("Subscribe & pilot options coming soon.")
+    with st.form(f"lead_{context}", clear_on_submit=True):
+        name = st.text_input("Name", placeholder="Your name", label_visibility="collapsed" if compact else "visible")
+        email = st.text_input("Email", placeholder="you@email.com", label_visibility="collapsed" if compact else "visible")
+        interest = st.selectbox(
+            "I'm interested in",
+            ["Monthly market brief", "Beta waitlist", "For teams / schools"],
+            label_visibility="collapsed" if compact else "visible",
+        )
+        submitted = st.form_submit_button("Notify me →", use_container_width=True)
+    if not submitted:
         return
-    if brief:
-        st.link_button("📩 Monthly market brief", brief, use_container_width=True)
-    if waitlist:
-        st.link_button("🔔 Join the beta waitlist", waitlist, use_container_width=True)
-    if pilot:
-        st.link_button("🏫 For teams & schools", pilot, use_container_width=True)
+    if not _EMAIL_RE.match((email or "").strip()):
+        st.warning("Please enter a valid email.")
+        return
+    name, email = (name or "").strip() or "—", email.strip()
+    _save_lead_local(name, email, interest)
+    _relay_lead(name, email, interest)
+    st.success("You're on the list — thanks! 🎉")
 
 
 def style_fig(fig, accent: str = "ink"):
