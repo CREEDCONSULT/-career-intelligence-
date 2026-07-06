@@ -40,24 +40,15 @@ def money_safe(text: str) -> str:
 
 
 # --- Lead capture -----------------------------------------------------------
-# In-app form captures name + email (no mail client needed). Submissions are
-# relayed to the owner via a form endpoint and backed up to a local CSV.
-#   LEAD_WEBHOOK_URL  — a form-relay endpoint (Formspree/Web3Forms/Google Apps
-#                       Script/etc.) that receives JSON {name,email,interest}.
-#   CONTACT_EMAIL     — if no webhook is set, defaults to FormSubmit's free,
-#                       no-account relay: https://formsubmit.co/ajax/<email>
-#                       (owner clicks a one-time activation email to start).
+# In-app form captures name + email (no mail client needed). Each submission is
+# relayed to the owner and backed up to a local CSV. Configure ONE of:
+#   WEB3FORMS_KEY     — a free Web3Forms access key (recommended; reliable server-
+#                       side delivery to your inbox). Get one at web3forms.com.
+#   LEAD_WEBHOOK_URL  — a generic endpoint that accepts JSON {name,email,interest}
+#                       (e.g. a Google Apps Script bound to a Sheet → persistent list).
 
 _LEADS_CSV = Path(__file__).resolve().parents[2] / "data" / "processed" / "leads.csv"
 _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
-
-
-def _lead_webhook() -> str:
-    url = os.getenv("LEAD_WEBHOOK_URL", "").strip()
-    if url:
-        return url
-    email = os.getenv("CONTACT_EMAIL", "").strip()
-    return f"https://formsubmit.co/ajax/{email}" if email else ""
 
 
 def _save_lead_local(name: str, email: str, interest: str) -> None:
@@ -74,19 +65,29 @@ def _save_lead_local(name: str, email: str, interest: str) -> None:
 
 
 def _relay_lead(name: str, email: str, interest: str) -> bool:
-    hook = _lead_webhook()
-    if not hook:
+    """Relay a lead to the configured destination. Returns True only on real success."""
+    key = os.getenv("WEB3FORMS_KEY", "").strip()
+    generic = os.getenv("LEAD_WEBHOOK_URL", "").strip()
+    if key:
+        url = "https://api.web3forms.com/submit"
+        payload = {
+            "access_key": key,
+            "subject": f"[Career Intelligence] New lead — {interest}",
+            "from_name": "Career Intelligence Dashboard",
+            "name": name, "email": email,
+            "message": f"Interest: {interest}\nName: {name}\nEmail: {email}",
+        }
+    elif generic:
+        url, payload = generic, {"name": name, "email": email, "interest": interest}
+    else:
         return False
-    payload = {
-        "name": name, "email": email, "interest": interest,
-        "_subject": f"[Career Intelligence] New lead — {interest}",
-        "_captcha": "false", "_template": "table",
-    }
     try:
         import requests
-        r = requests.post(hook, json=payload, timeout=12,
-                          headers={"Accept": "application/json"})
-        return r.ok
+        r = requests.post(url, json=payload, timeout=12, headers={"Accept": "application/json"})
+        try:
+            return str(r.json().get("success", "")).lower() == "true"
+        except Exception:  # noqa: BLE001 - non-JSON (e.g. Apps Script) → trust HTTP 2xx
+            return r.ok
     except Exception:  # noqa: BLE001 - never break the UI on a network hiccup
         return False
 
