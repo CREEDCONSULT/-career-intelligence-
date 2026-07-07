@@ -117,13 +117,17 @@ _WEB3_HTML = """
   var f=document.getElementById("lf"), b=document.getElementById("lfb"), m=document.getElementById("lfm");
   f.addEventListener("submit", function(e){
     e.preventDefault();
-    var body={access_key:KEY, subject:"[Career Intelligence] New lead — "+f.interest.value,
-      from_name:"Career Intelligence Dashboard", name:f.name.value, email:f.email.value,
-      message:"Interest: "+f.interest.value+"\\nName: "+f.name.value+"\\nEmail: "+f.email.value};
+    // Use FormData (multipart) — a CORS "simple request", no preflight needed.
+    var fd=new FormData();
+    fd.append("access_key", KEY);
+    fd.append("subject", "[Career Intelligence] New lead — "+f.interest.value);
+    fd.append("from_name", "Career Intelligence Dashboard");
+    fd.append("name", f.name.value);
+    fd.append("email", f.email.value);
+    fd.append("message", "Interest: "+f.interest.value+"\\nName: "+f.name.value+"\\nEmail: "+f.email.value);
+    fd.append("botcheck", "");
     b.disabled=true; b.textContent="Sending…"; m.style.color="#64748D"; m.textContent="";
-    fetch("https://api.web3forms.com/submit",{method:"POST",
-      headers:{"Content-Type":"application/json","Accept":"application/json"},
-      body:JSON.stringify(body)})
+    fetch("https://api.web3forms.com/submit",{method:"POST", body:fd})
       .then(function(r){return r.json();})
       .then(function(d){
         if(d.success){ m.style.color="#108C3D"; m.textContent="✅ You're on the list — thanks!"; f.reset(); }
