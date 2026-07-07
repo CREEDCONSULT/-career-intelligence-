@@ -65,96 +65,27 @@ def _save_lead_local(name: str, email: str, interest: str) -> None:
 
 
 def _relay_lead(name: str, email: str, interest: str) -> bool:
-    """Relay a lead to the configured destination. Returns True only on real success."""
-    key = os.getenv("WEB3FORMS_KEY", "").strip()
-    generic = os.getenv("LEAD_WEBHOOK_URL", "").strip()
-    if key:
-        url = "https://api.web3forms.com/submit"
-        payload = {
-            "access_key": key,
-            "subject": f"[Career Intelligence] New lead — {interest}",
-            "from_name": "Career Intelligence Dashboard",
-            "name": name, "email": email,
-            "message": f"Interest: {interest}\nName: {name}\nEmail: {email}",
-        }
-    elif generic:
-        url, payload = generic, {"name": name, "email": email, "interest": interest}
-    else:
+    """Relay a lead to LEAD_WEBHOOK_URL (e.g. a Google Apps Script). Server-side."""
+    url = os.getenv("LEAD_WEBHOOK_URL", "").strip()
+    if not url:
         return False
+    payload = {"name": name, "email": email, "interest": interest}
     try:
         import requests
         r = requests.post(url, json=payload, timeout=12, headers={"Accept": "application/json"})
-        try:
-            return str(r.json().get("success", "")).lower() == "true"
-        except Exception:  # noqa: BLE001 - non-JSON (e.g. Apps Script) → trust HTTP 2xx
-            return r.ok
+        return r.ok
     except Exception:  # noqa: BLE001 - never break the UI on a network hiccup
         return False
-
-
-_WEB3_HTML = """
-<div style="font-family:'Source Sans 3',system-ui,-apple-system,sans-serif;">
-  <form id="lf" style="display:flex;flex-direction:column;gap:8px;">
-    <input name="name" placeholder="Your name" required
-      style="padding:9px 11px;border:1px solid #E5EDF5;border-radius:6px;font-size:0.9rem;">
-    <input name="email" type="email" placeholder="you@email.com" required
-      style="padding:9px 11px;border:1px solid #E5EDF5;border-radius:6px;font-size:0.9rem;">
-    <select name="interest"
-      style="padding:9px 11px;border:1px solid #E5EDF5;border-radius:6px;font-size:0.9rem;background:#fff;">
-      <option>Monthly market brief</option>
-      <option>Beta waitlist</option>
-      <option>For teams / schools</option>
-    </select>
-    <button type="submit" id="lfb"
-      style="padding:10px 14px;background:#3B2F9E;color:#fff;border:none;border-radius:6px;
-      font-size:0.9rem;font-weight:600;cursor:pointer;">Notify me &rarr;</button>
-  </form>
-  <div id="lfm" style="font-size:0.82rem;color:#108C3D;margin-top:8px;"></div>
-</div>
-<script>
-(function(){
-  var KEY="__KEY__";
-  var f=document.getElementById("lf"), b=document.getElementById("lfb"), m=document.getElementById("lfm");
-  f.addEventListener("submit", function(e){
-    e.preventDefault();
-    // Use FormData (multipart) — a CORS "simple request", no preflight needed.
-    var fd=new FormData();
-    fd.append("access_key", KEY);
-    fd.append("subject", "[Career Intelligence] New lead — "+f.interest.value);
-    fd.append("from_name", "Career Intelligence Dashboard");
-    fd.append("name", f.name.value);
-    fd.append("email", f.email.value);
-    fd.append("message", "Interest: "+f.interest.value+"\\nName: "+f.name.value+"\\nEmail: "+f.email.value);
-    fd.append("botcheck", "");
-    b.disabled=true; b.textContent="Sending…"; m.style.color="#64748D"; m.textContent="";
-    fetch("https://api.web3forms.com/submit",{method:"POST", body:fd})
-      .then(function(r){return r.json();})
-      .then(function(d){
-        if(d.success){ m.style.color="#108C3D"; m.textContent="✅ You're on the list — thanks!"; f.reset(); }
-        else { m.style.color="#C41A4D"; m.textContent="⚠️ "+(d.message||"Something went wrong."); }
-      })
-      .catch(function(){ m.style.color="#C41A4D"; m.textContent="⚠️ Network error — please try again."; })
-      .finally(function(){ b.disabled=false; b.innerHTML="Notify me &rarr;"; });
-  });
-})();
-</script>
-"""
 
 
 def lead_form(context: str = "sidebar", compact: bool = True) -> None:
     """Render a name + email capture form. Works without a mail client.
 
-    If WEB3FORMS_KEY is set, embeds a browser-side form that posts directly to
-    Web3Forms (works on the free tier). Otherwise falls back to a native Streamlit
-    form that relays via LEAD_WEBHOOK_URL and/or a local CSV backup.
+    Native Streamlit form → server-side relay to LEAD_WEBHOOK_URL (e.g. a Google
+    Apps Script bound to a Sheet) plus a local CSV backup. No CORS, no third-party
+    client-side plan gating.
     """
     st.markdown("**📬 Stay in the loop**" if compact else "### 📬 Stay in the loop")
-
-    key = os.getenv("WEB3FORMS_KEY", "").strip()
-    if key:
-        from streamlit.components.v1 import html as _html
-        _html(_WEB3_HTML.replace("__KEY__", key), height=210 if compact else 200)
-        return
 
     with st.form(f"lead_{context}", clear_on_submit=True):
         name = st.text_input("Name", placeholder="Your name", label_visibility="collapsed" if compact else "visible")
