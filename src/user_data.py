@@ -1,14 +1,14 @@
 import duckdb
 from pathlib import Path
 from typing import Optional, List, Dict, Any
-import json
-import os
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[1]  # repo root (src/user_data.py -> repo)
 DB_PATH = ROOT / "data" / "processed" / "career_intel.duckdb"
+
 
 def get_conn():
     return duckdb.connect(str(DB_PATH))
+
 
 def init_user_tables():
     """Initialize user data tables if they don't exist."""
@@ -55,6 +55,10 @@ def init_user_tables():
             )
         """)
         # user_applications table
+        # NOTE: opportunity_id references job_postings.id by convention only -
+        # the pipeline's job_postings has no PK/unique constraint (and is
+        # dropped + rebuilt by scripts/transform.py on every run), so a hard
+        # FOREIGN KEY cannot be created against it.
         conn.execute("""
             CREATE TABLE IF NOT EXISTS user_applications (
                 id INTEGER PRIMARY KEY,
@@ -62,12 +66,12 @@ def init_user_tables():
                 application_date DATE,
                 status VARCHAR,
                 application_materials VARCHAR,
-                next_best_action VARCHAR,
-                FOREIGN KEY (opportunity_id) REFERENCES job_postings (id)
+                next_best_action VARCHAR
             )
         """)
     finally:
         conn.close()
+
 
 def get_career_profile() -> Optional[Dict[str, Any]]:
     """Get the career profile. Returns None if not exists."""
@@ -81,6 +85,7 @@ def get_career_profile() -> Optional[Dict[str, Any]]:
         return dict(zip(column_names, result))
     finally:
         conn.close()
+
 
 def set_career_profile(profile: Dict[str, Any]):
     """Set the career profile. If a profile exists, update it; otherwise, insert a new one."""
@@ -97,18 +102,22 @@ def set_career_profile(profile: Dict[str, Any]):
             # Update existing profile
             set_clause = ", ".join([f"{k} = ?" for k in profile.keys()])
             values = tuple(profile.values())
-            conn.execute(f"UPDATE career_profile SET {set_clause} WHERE id = ?", values + (existing["id"],))
+            conn.execute(
+                f"UPDATE career_profile SET {set_clause} WHERE id = ?", values + (existing["id"],)
+            )
     finally:
         conn.close()
+
 
 def get_user_skills() -> List[Dict[str, Any]]:
     """Get all user skills."""
     conn = get_conn()
     try:
         result = conn.execute("SELECT * FROM user_skills").fetchdf()
-        return result.to_dict('records')
+        return result.to_dict("records")
     finally:
         conn.close()
+
 
 def add_user_skill(skill: Dict[str, Any]):
     """Add a new user skill."""
@@ -121,6 +130,7 @@ def add_user_skill(skill: Dict[str, Any]):
     finally:
         conn.close()
 
+
 def update_user_skill(skill_id: int, skill: Dict[str, Any]):
     """Update an existing user skill."""
     conn = get_conn()
@@ -131,14 +141,16 @@ def update_user_skill(skill_id: int, skill: Dict[str, Any]):
     finally:
         conn.close()
 
+
 def get_user_evidence() -> List[Dict[str, Any]]:
     """Get all user evidence."""
     conn = get_conn()
     try:
         result = conn.execute("SELECT * FROM user_evidence").fetchdf()
-        return result.to_dict('records')
+        return result.to_dict("records")
     finally:
         conn.close()
+
 
 def add_user_evidence(evidence: Dict[str, Any]):
     """Add a new user evidence."""
@@ -151,6 +163,7 @@ def add_user_evidence(evidence: Dict[str, Any]):
     finally:
         conn.close()
 
+
 def update_user_evidence(evidence_id: int, evidence: Dict[str, Any]):
     """Update an existing user evidence."""
     conn = get_conn()
@@ -161,14 +174,16 @@ def update_user_evidence(evidence_id: int, evidence: Dict[str, Any]):
     finally:
         conn.close()
 
+
 def get_user_applications() -> List[Dict[str, Any]]:
     """Get all user applications."""
     conn = get_conn()
     try:
         result = conn.execute("SELECT * FROM user_applications").fetchdf()
-        return result.to_dict('records')
+        return result.to_dict("records")
     finally:
         conn.close()
+
 
 def add_user_application(application: Dict[str, Any]):
     """Add a new user application."""
@@ -181,12 +196,15 @@ def add_user_application(application: Dict[str, Any]):
     finally:
         conn.close()
 
+
 def update_user_application(application_id: int, application: Dict[str, Any]):
     """Update an existing user application."""
     conn = get_conn()
     try:
         set_clause = ", ".join([f"{k} = ?" for k in application.keys()])
         values = tuple(application.values())
-        conn.execute(f"UPDATE user_applications SET {set_clause} WHERE id = ?", values + (application_id,))
+        conn.execute(
+            f"UPDATE user_applications SET {set_clause} WHERE id = ?", values + (application_id,)
+        )
     finally:
         conn.close()

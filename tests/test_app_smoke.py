@@ -2,6 +2,7 @@
 
 Skips automatically if the processed DB hasn't been built yet.
 """
+
 import sys
 from pathlib import Path
 
@@ -16,7 +17,17 @@ sys.path.insert(0, str(ROOT / "streamlit_app"))
 
 pytestmark = pytest.mark.skipif(not DB.exists(), reason="DB not built; run downloaders + transform")
 
-PAGES = ["💬 Ask the Data", "🧠 Career Advisor", "📈 Skill Demand", "💰 Salary Ranges", "🎯 Role Fit", "📄 Resume Studio", "📊 Market Context", "📰 Market Brief"]
+PAGES = [
+    "Ask the Data",
+    "Career Advisor",
+    "Skill Demand",
+    "Salary Ranges",
+    "Role Fit",
+    "Resume Studio",
+    "Market Context",
+    "Market Brief",
+    "Career Profile",
+]
 
 
 @pytest.mark.parametrize("page", PAGES)
