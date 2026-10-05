@@ -1,0 +1,71 @@
+{
+  "agent_id": "unknown",
+  "task_id": "task_ffc2eeecff",
+  "project": "-career-intelligence--main",
+  "objective": "Recover the Career Intelligence codebase to a known-good, testable baseline after the previous session corrupted app.py and destroyed transform.py; then document current state, gaps, integration boundaries, and the next milestone plan",
+  "current_plan": [],
+  "completed_work": [],
+  "unresolved_work": [],
+  "files_changed": [],
+  "test_state": {
+    "overall": "unknown",
+    "suites": {}
+  },
+  "decisions": [],
+  "known_failures": [],
+  "research_evidence": [],
+  "environment_state": {},
+  "next_action": "Start M1 vertical slice: add opportunities table + DAO with backfill from job_postings, then posting-detail/shortlist UI (CAREER_INTELLIGENCE_RECOVERY_REPORT.md section 12, task 1). Run scripts/extract_skills_llm.py once with an API key to populate job_skills_llm (fixes the 1 red test). Validation: pip install -e ., ruff check src scripts streamlit_app, pytest -q (expect 100 pass + 1 known data-gap failure), streamlit run streamlit_app/app.py. Use system python C:\\Users\\daunt\\AppData\\Local\\Programs\\Python\\Python311\\python.exe - bare 'python' resolves to the Hermes venv without deps.",
+  "last_checkpoint": "C:\\Users\\daunt\\Downloads\\-career-intelligence--main\\-career-intelligence--main\\.creed\\checkpoints\\2026-10-05T11-12-42-875Z-career-intelligence-recovered-to-known-g.json",
+  "checkpoints": [
+    "C:\\Users\\daunt\\Downloads\\-career-intelligence--main\\-career-intelligence--main\\.creed\\checkpoints\\2026-10-05T11-12-42-875Z-career-intelligence-recovered-to-known-g.json"
+  ],
+  "model": null,
+  "provider": null,
+  "created_at": "2026-10-05T11:12:42.783Z",
+  "updated_at": "2026-10-05T11:12:42.926Z",
+  "schema_hint": {
+    "agent_id": "string",
+    "task_id": "string",
+    "project": "string",
+    "objective": "string",
+    "current_plan": [
+      {
+        "step": "string",
+        "status": "pending|active|done|blocked"
+      }
+    ],
+    "completed_work": [
+      "string"
+    ],
+    "unresolved_work": [
+      "string"
+    ],
+    "files_changed": [
+      "string"
+    ],
+    "test_state": {
+      "overall": "unknown|pass|fail|partial",
+      "suites": {}
+    },
+    "decisions": [
+      "string"
+    ],
+    "known_failures": [
+      "string"
+    ],
+    "research_evidence": [
+      "string"
+    ],
+    "environment_state": {
+      "note": "arbitrary JSON"
+    },
+    "next_action": "string — THE resumption point",
+    "last_checkpoint": "ISO string",
+    "checkpoints": [
+      "paths"
+    ],
+    "model": "string (metadata only — §21)",
+    "provider": "string (metadata only — §21)"
+  }
+}
