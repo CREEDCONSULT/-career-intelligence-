@@ -20,7 +20,9 @@ from typing import Optional, Dict, Any
 ROOT = Path(__file__).resolve().parents[1]  # repo root (src/user_data.py -> repo)
 DB_PATH = ROOT / "data" / "processed" / "career_intel.duckdb"
 
-_SUPERSEDED = ("user_skills", "user_evidence", "user_applications")
+_SUPERSEDED = ("user_evidence", "user_applications", "user_skills")
+# NOTE: drop order matters - the pre-M1 user_evidence table has a FOREIGN KEY
+# referencing user_skills, so the child must be dropped before the parent.
 
 
 def get_conn():
@@ -40,17 +42,24 @@ def migrate_superseded_tables() -> list[str]:
     """One-time cleanup: drop the pre-M1 empty sketch tables if present.
 
     Only drops a table when it holds ZERO rows - any real data is preserved
-    (and reported) rather than destroyed. Returns the dropped table names.
+    (and reported) rather than destroyed. Each drop is isolated so one
+    failure (e.g. an unexpected FK) never blocks the rest. Returns the
+    dropped table names.
     """
     dropped = []
     conn = get_conn()
     try:
         for t in _SUPERSEDED:
-            if _table_exists(conn, t):
-                n = conn.execute(f"SELECT COUNT(*) FROM {t}").fetchone()[0]
-                if n == 0:
-                    conn.execute(f"DROP TABLE {t}")
-                    dropped.append(t)
+            if not _table_exists(conn, t):
+                continue
+            n = conn.execute(f"SELECT COUNT(*) FROM {t}").fetchone()[0]
+            if n != 0:
+                continue
+            try:
+                conn.execute(f"DROP TABLE {t}")
+                dropped.append(t)
+            except Exception as e:  # noqa: BLE001 - never block startup on one table
+                print(f"[career-intel] could not drop superseded table {t}: {e}")
     finally:
         conn.close()
     return dropped
