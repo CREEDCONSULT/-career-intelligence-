@@ -23,7 +23,9 @@ from pages_impl import (  # noqa: E402
     ask,
     brief,
     career_profile,
+    evidence_library,
     market_context,
+    opportunities,
     resume_studio,
     role_fit,
     salary_ranges,
@@ -37,6 +39,11 @@ try:
     from src import user_data
 
     user_data.init_user_tables()
+    # One-time M1 cleanup: drop the pre-M1 empty sketch tables (user_skills,
+    # user_evidence, user_applications) superseded by the careeros stores.
+    dropped = user_data.migrate_superseded_tables()
+    if dropped:
+        print(f"[career-intel] migrated away superseded tables: {dropped}")
 except Exception as _e:  # noqa: BLE001
     print(f"[career-intel] user tables init skipped: {_e}")
 
@@ -91,6 +98,8 @@ PAGES = {
     "Market Context": market_context,
     "Market Brief": brief,
     "Career Profile": career_profile,
+    "Opportunities": opportunities,
+    "Evidence Library": evidence_library,
 }
 
 with st.sidebar:

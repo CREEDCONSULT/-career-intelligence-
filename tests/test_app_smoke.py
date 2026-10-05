@@ -27,6 +27,8 @@ PAGES = [
     "Market Context",
     "Market Brief",
     "Career Profile",
+    "Opportunities",
+    "Evidence Library",
 ]
 
 
