@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Career Intelligence Dashboard — Case Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#071018;--card:#0B1520;--card2:#111C2A;--line:#29384C;--gold:#D5B56E;--cream:#F7F1E8;--slate:#AEB9C8;--blue:#7CB4FF;--green:#8EE0B2;--red:#FF9A9A;--mono:'JetBrains Mono',monospace;--sans:'Inter',system-ui,sans-serif}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--sans);background:var(--bg);color:var(--cream);line-height:1.6;
+    background-image:radial-gradient(900px 500px at 85% -6%,rgba(213,181,110,.09),transparent 60%),linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+    background-size:100% 100%,48px 48px,48px 48px;background-blend-mode:normal,soft-light,soft-light}
+  .wrap{max-width:840px;margin:0 auto;padding:0 24px}
+  .eyebrow{font-family:var(--mono);font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+  hr.d{width:120px;height:2px;background:var(--gold);border:0;margin:18px 0 26px}
+  a{color:var(--blue);text-decoration:none} a:hover{text-decoration:underline}
+  .pill{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:999px;border:1px solid var(--line);color:var(--slate)}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green)}
+  header{padding:80px 0 40px}
+  h1{font-size:clamp(2.2rem,5vw,3.4rem);font-weight:800;letter-spacing:-.02em;line-height:1.08}
+  h1 .g{color:var(--gold)}
+  .meta{font-family:var(--mono);color:var(--slate);font-size:.85rem;margin-top:20px;display:flex;gap:16px;flex-wrap:wrap}
+  section{padding:34px 0;border-top:1px solid var(--line)}
+  h2{font-size:clamp(1.4rem,3.2vw,2rem);font-weight:700;margin-bottom:14px;letter-spacing:-.01em}
+  p{color:var(--slate);margin-bottom:14px} p strong{color:var(--cream)}
+  .pull{font-size:clamp(1.3rem,3vw,1.8rem);font-weight:600;color:var(--cream);line-height:1.35;border-left:3px solid var(--gold);padding-left:20px;margin:8px 0}
+  ul{list-style:none;margin:8px 0} li{color:var(--slate);padding:8px 0 8px 26px;position:relative}
+  li::before{content:"→";position:absolute;left:0;color:var(--gold);font-family:var(--mono)}
+  .grid{display:grid;gap:14px;grid-template-columns:repeat(4,1fr);margin:16px 0}
+  @media(max-width:640px){.grid{grid-template-columns:repeat(2,1fr)}}
+  .metric{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+  .metric .num{font-family:var(--mono);font-size:1.7rem;font-weight:700;color:var(--cream)}
+  .metric .num.g{color:var(--gold)}.metric .num.b{color:var(--blue)}
+  .metric .lab{font-family:var(--mono);font-size:.68rem;color:var(--slate);text-transform:uppercase;letter-spacing:.06em;margin-top:6px}
+  .tick{color:var(--green)}
+  .flow{font-family:var(--mono);color:var(--slate);font-size:.85rem;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin:8px 0}
+  .flow b{color:var(--cream)}.flow .g{color:var(--gold)}.flow .b{color:var(--blue)}.flow .rd{color:var(--red)}
+  footer{border-top:1px solid var(--line);padding:44px 0 72px}
+  .btn{display:inline-block;font-family:var(--mono);font-size:.82rem;padding:11px 18px;border-radius:10px;border:1px solid var(--gold);color:var(--gold);margin:6px 8px 6px 0}
+  .btn.solid{background:var(--gold);color:#0b0f14}
+  .sign{font-family:var(--mono);color:var(--slate);font-size:.82rem;margin-top:24px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <span class="pill"><span class="dot"></span> AI Product Strategy · Case Study</span>
+  <hr class="d">
+  <h1>Career Intelligence Dashboard:<br><span class="g">from research to product</span></h1>
+  <div class="meta">
+    <span>Role · Product · AI · Data · UX</span><span>Market · Toronto / Canada</span><span>Status · Phase 0, live</span>
+  </div>
+</header>
+
+<section>
+  <span class="eyebrow">The problem</span>
+  <h2>Career advice has a data problem</h2>
+  <p>It sounds intelligent. It's rarely grounded. "Learn in-demand skills" — which ones, in which city,
+  growing or fading, paying what? Most advice can't answer, because it runs on vibes, not data.</p>
+  <p class="pull">I wanted career answers that trace back to a source — and an AI that admits when it can't.</p>
+</section>
+
+<section>
+  <span class="eyebrow">The approach</span>
+  <h2>Design it as a system, not a prompt</h2>
+  <p><strong>Data first. AI second. UX third.</strong> That order was the strategy. A language model on
+  top of bad data is just a confident way to be wrong — so most of the real work went into the layers
+  underneath the model.</p>
+  <div class="flow"><b>Data</b> <span class="g">→</span> <b>Analytics</b> <span class="g">→</span>
+  <b class="b">AI (guarded)</b> <span class="g">→</span> <b>UX</b> <span class="g">→</span>
+  <b>Evaluation</b> <span class="g">→</span> <b class="g">Productization</b></div>
+</section>
+
+<section>
+  <span class="eyebrow">The data layer</span>
+  <h2>Five official sources, one clean store</h2>
+  <ul>
+    <li>Job Bank Canada — postings &amp; wages</li>
+    <li>Statistics Canada — job vacancies</li>
+    <li>Indeed Hiring Lab — hiring momentum, AI-share of postings</li>
+    <li>Lightcast — skills taxonomy</li>
+    <li>NOC 2021 — occupation classification</li>
+  </ul>
+  <p>Different formats, different geographies — normalized into one queryable store of <strong>97,227
+  Toronto postings</strong> and <strong>5,148 skills</strong>, refreshed on an automated monthly schedule.</p>
+</section>
+
+<section>
+  <span class="eyebrow">The AI layer</span>
+  <h2>The model explains — it never invents</h2>
+  <p>The AI answers a question by writing a query, not by guessing. The query is validated, executed
+  read-only against the data, and the model narrates <strong>only</strong> the numbers that came back.
+  Every figure in an answer is checked against the result set; unsupported numbers don't ship.</p>
+  <div class="flow"><b>Question</b> <span class="g">→</span> <b class="b">LLM writes SQL</b>
+  <span class="g">→</span> <b>validate (SELECT-only)</b> <span class="g">→</span> <b>execute</b>
+  <span class="g">→</span> <b>result table</b> <span class="g">→</span> <b class="b">narrate</b>
+  <span class="g">→</span> <b>grounding check</b> <span class="g">→</span> <b class="tick">answer</b>
+  <span class="rd"> | else refuse</span></div>
+</section>
+
+<section>
+  <span class="eyebrow">Evaluation</span>
+  <h2>Trust, measured</h2>
+  <p>"Is your AI accurate?" is the wrong question. "How do you know?" is the right one. So I measured it.</p>
+  <div class="grid">
+    <div class="metric"><div class="num b">80%</div><div class="lab">Text-to-SQL accuracy</div></div>
+    <div class="metric"><div class="num g">0</div><div class="lab">Invented numbers shown</div></div>
+    <div class="metric"><div class="num">0.94</div><div class="lab tick">✓ Brief faithfulness</div></div>
+    <div class="metric"><div class="num">5/5</div><div class="lab tick">✓ Refusals</div></div>
+  </div>
+  <p>None of these are perfect. All of them are measured — and reproducible from the repo.</p>
+</section>
+
+<section>
+  <span class="eyebrow">The product</span>
+  <h2>Eight modules; every answer shows its work</h2>
+  <ul>
+    <li>Ask the Data · Career Advisor · Skill Demand · Salary Ranges</li>
+    <li>Role Fit · Resume Studio · Market Context · Market Brief</li>
+  </ul>
+  <p>The Resume Studio parses uploads token-free, matches a résumé to real in-demand roles
+  (<strong>8/8 top-5</strong> on test profiles), and reviews/tailors/drafts — without fabricating experience.</p>
+</section>
+
+<section>
+  <span class="eyebrow">Productization</span>
+  <h2>The ramp, designed before it was needed</h2>
+  <p>Open proof-of-work (now) → gated beta → personal intelligence layer → coach/institution dashboards
+  → market expansion → API. The whole engine is market-configurable — one config retargets it to a new
+  city. <strong>The dashboard is the wedge; the data layer is the moat.</strong></p>
+</section>
+
+<section>
+  <span class="eyebrow">Reflection</span>
+  <h2>What this proves</h2>
+  <p class="pull">AI strategy becomes real when it leaves the slide deck and turns into a working system.</p>
+  <p>This isn't a scaled product. It's Phase 0. But it demonstrates the whole method I work by —
+  research → systems → AI workflows → product → scale — as a working artifact you can click.</p>
+</section>
+
+<footer>
+  <span class="eyebrow">Explore</span>
+  <div style="margin-top:14px">
+    <a class="btn solid" href="https://career-intelligence-production.up.railway.app/" target="_blank">Live dashboard</a>
+    <a class="btn" href="https://github.com/CREEDCONSULT/-career-intelligence-" target="_blank">GitHub repo</a>
+    <a class="btn" href="https://www.linkedin.com/in/mesomachukwu-mezie-akabudu-a2606b236/" target="_blank">LinkedIn</a>
+  </div>
+  <div class="sign">Mesomachukwu Mezie-Akabudu · AI Product &amp; Strategy · creedConsult · Toronto</div>
+</footer>
+
+</div>
+</body>
+</html>

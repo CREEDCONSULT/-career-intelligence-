@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.env
+.pytest_cache/
+.coverage
+.mypy_cache/
+
+# Data
+data/raw/
+data/processed/*
+logs/
+*.db
+*.duckdb
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Playwright
+playwright-report/
+test-results/
+
+.venv/
+*.egg-info/
+__pycache__/
+*.pyc
+
+# ...but DO commit the small built demo database so the app runs on a fresh clone
+!data/processed/
+!data/processed/career_intel.duckdb
+
+data/processed/qdrant/

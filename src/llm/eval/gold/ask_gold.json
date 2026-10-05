@@ -1,0 +1,61 @@
+[
+  {"question": "What are the top 5 skills by number of postings?",
+   "reference_sql": "SELECT skill_name, count(DISTINCT job_id) AS n FROM job_skills GROUP BY skill_name ORDER BY n DESC LIMIT 5"},
+
+  {"question": "How many job postings are there in total?",
+   "reference_sql": "SELECT count(*) AS n FROM job_postings"},
+
+  {"question": "What is the median hourly wage across all Toronto roles?",
+   "reference_sql": "SELECT median(median_wage) AS m FROM wages_job_bank WHERE region = 'Toronto'"},
+
+  {"question": "Which 5 occupations have the highest median wage?",
+   "reference_sql": "SELECT m.title, w.median_wage FROM wages_job_bank w JOIN noc_mapping m ON w.noc_code = m.noc_code WHERE w.region = 'Toronto' ORDER BY w.median_wage DESC LIMIT 5"},
+
+  {"question": "How many distinct skills were extracted?",
+   "reference_sql": "SELECT count(DISTINCT skill_id) AS n FROM job_skills"},
+
+  {"question": "What is the latest Indeed Toronto postings index value?",
+   "reference_sql": "SELECT value FROM indeed_trends WHERE metric = 'postings_index' AND geography = 'Toronto' ORDER BY date DESC LIMIT 1"},
+
+  {"question": "How many postings mention Sales?",
+   "reference_sql": "SELECT count(DISTINCT job_id) AS n FROM job_skills WHERE skill_name = 'Sales'"},
+
+  {"question": "List the top 10 occupations by total vacancies in Toronto.",
+   "reference_sql": "SELECT m.title, sum(v.vacancy_count) AS vac FROM vacancies_statscan v JOIN noc_mapping m ON v.noc_code = m.noc_code WHERE v.region = 'Toronto' GROUP BY m.title ORDER BY vac DESC LIMIT 10"},
+
+  {"question": "What is the average AI share of postings in Canada?",
+   "reference_sql": "SELECT avg(value) AS m FROM indeed_trends WHERE metric = 'ai_share' AND geography = 'Canada'"},
+
+  {"question": "How many postings are there per month?",
+   "reference_sql": "SELECT date_trunc('month', posted_date) AS month, count(*) AS n FROM job_postings WHERE posted_date IS NOT NULL GROUP BY 1 ORDER BY 1"},
+
+  {"question": "Which skill categories are most common?",
+   "reference_sql": "SELECT category, count(*) AS n FROM job_skills GROUP BY category ORDER BY n DESC"},
+
+  {"question": "What is the highest maximum wage recorded in Toronto?",
+   "reference_sql": "SELECT max(max_wage) AS m FROM wages_job_bank WHERE region = 'Toronto'"},
+
+  {"question": "Rank skills by postings and show the rank.",
+   "reference_sql": "WITH s AS (SELECT skill_name, count(DISTINCT job_id) AS n FROM job_skills GROUP BY skill_name) SELECT skill_name, n, row_number() OVER (ORDER BY n DESC) AS rank FROM s ORDER BY rank LIMIT 10"},
+
+  {"question": "How many postings have a salary value?",
+   "reference_sql": "SELECT count(*) AS n FROM job_postings WHERE salary_median IS NOT NULL"},
+
+  {"question": "What is the total number of vacancies in Toronto across all quarters?",
+   "reference_sql": "SELECT sum(vacancy_count) AS total FROM vacancies_statscan WHERE region = 'Toronto'"},
+
+  {"question": "What is the average median wage by NOC, top 5?",
+   "reference_sql": "SELECT m.title, avg(w.median_wage) AS avg_wage FROM wages_job_bank w JOIN noc_mapping m ON w.noc_code = m.noc_code WHERE w.region = 'Toronto' GROUP BY m.title ORDER BY avg_wage DESC LIMIT 5"},
+
+  {"question": "How many unique occupations appear in postings?",
+   "reference_sql": "SELECT count(DISTINCT noc_code) AS n FROM job_postings"},
+
+  {"question": "Show the monthly count of Sales postings.",
+   "reference_sql": "SELECT date_trunc('month', posted_date) AS month, count(DISTINCT job_id) AS n FROM job_skills WHERE skill_name = 'Sales' AND posted_date IS NOT NULL GROUP BY 1 ORDER BY 1"},
+
+  {"question": "What is the minimum wage across Toronto roles?",
+   "reference_sql": "SELECT min(min_wage) AS m FROM wages_job_bank WHERE region = 'Toronto' AND min_wage > 0"},
+
+  {"question": "Which 5 skills have the most postings in the most recent month?",
+   "reference_sql": "WITH latest AS (SELECT max(date_trunc('month', posted_date)) AS mo FROM job_skills WHERE posted_date IS NOT NULL) SELECT skill_name, count(DISTINCT job_id) AS n FROM job_skills WHERE date_trunc('month', posted_date) = (SELECT mo FROM latest) GROUP BY skill_name ORDER BY n DESC LIMIT 5"}
+]

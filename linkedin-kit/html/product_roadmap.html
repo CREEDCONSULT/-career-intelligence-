@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Productization Roadmap — Career Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#071018;--card:#0B1520;--line:#29384C;--gold:#D5B56E;--cream:#F7F1E8;--slate:#AEB9C8;--blue:#7CB4FF;--green:#8EE0B2;--mono:'JetBrains Mono',monospace;--sans:'Inter',system-ui,sans-serif}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--sans);background:var(--bg);color:var(--cream);line-height:1.55;
+    background-image:radial-gradient(900px 500px at 85% -6%,rgba(213,181,110,.08),transparent 60%),linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+    background-size:100% 100%,48px 48px,48px 48px;background-blend-mode:normal,soft-light,soft-light}
+  .wrap{max-width:960px;margin:0 auto;padding:64px 24px}
+  .eyebrow{font-family:var(--mono);font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+  h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:800;letter-spacing:-.02em;margin:12px 0}
+  h1 .g{color:var(--gold)}
+  .sub{color:var(--slate);max-width:680px;margin-bottom:10px}
+  .thesis{font-family:var(--mono);color:var(--slate);border-left:3px solid var(--gold);padding-left:16px;margin:26px 0 40px}
+  .thesis b{color:var(--cream)}
+  .timeline{position:relative;margin-left:14px;padding-left:34px;border-left:1px solid var(--line)}
+  .node{position:relative;margin-bottom:26px}
+  .node::before{content:"";position:absolute;left:-41px;top:6px;width:14px;height:14px;border-radius:50%;background:var(--bg);border:2px solid var(--line)}
+  .node.now::before{border-color:var(--gold);background:var(--gold);box-shadow:0 0 12px rgba(213,181,110,.6)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px}
+  .node.now .card{border-color:var(--gold)}
+  .ph{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .ph .tag{font-family:var(--mono);font-size:.72rem;color:var(--gold);letter-spacing:.06em}
+  .ph h3{font-size:1.2rem;font-weight:700}
+  .live{font-family:var(--mono);font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:var(--green);border:1px solid rgba(142,224,178,.4);padding:3px 8px;border-radius:999px}
+  .feat{color:var(--slate);font-size:.94rem;margin:10px 0 8px}
+  .row{display:flex;gap:18px;flex-wrap:wrap;font-family:var(--mono);font-size:.78rem;color:var(--slate);margin-top:8px}
+  .row b{color:var(--cream)} .row .b{color:var(--blue)}
+  table{width:100%;border-collapse:collapse;margin-top:14px;font-size:.9rem}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}
+  th{font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold)}
+  td{color:var(--slate)} td b{color:var(--cream)}
+  footer{color:var(--slate);font-family:var(--mono);font-size:.82rem;margin-top:46px;border-top:1px solid var(--line);padding-top:20px}
+  a{color:var(--blue);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="eyebrow">Productization roadmap</span>
+  <h1>From open demo to a <span class="g">business</span>.</h1>
+  <p class="sub">Today this is Phase 0 — a proof-of-work. The value of the roadmap is that it exists and
+  is sequenced: I designed the ramp before I needed it.</p>
+  <div class="thesis">A dashboard becomes a product when it has <b>users</b>, <b>workflows</b>,
+  <b>trust</b>, and a <b>business model</b>.</div>
+
+  <div class="timeline">
+    <div class="node now"><div class="card">
+      <div class="ph"><span class="tag">PHASE 0</span><h3>Open proof-of-work</h3><span class="live">● live · shipped</span></div>
+      <p class="feat">Live app, public repo, 8 modules, real evaluation metrics, honest limitations.</p>
+      <div class="row"><span><b>97,227</b> postings</span><span><b class="b">80%</b> query accuracy</span><span><b>0</b> invented numbers</span></div>
+    </div></div>
+
+    <div class="node"><div class="card">
+      <div class="ph"><span class="tag">PHASE 1</span><h3>Gated beta</h3></div>
+      <p class="feat">Login, user accounts, saved sessions, usage analytics — anonymous traffic becomes known users and a feedback loop.</p>
+      <div class="row"><span>Metric that matters: <b>returning users / week</b></span></div>
+    </div></div>
+
+    <div class="node"><div class="card">
+      <div class="ph"><span class="tag">PHASE 2</span><h3>Personal intelligence layer</h3></div>
+      <p class="feat">Saved resumes, role watchlists, skill-gap plans, personalized market alerts — the product becomes a companion that remembers you.</p>
+      <div class="row"><span>First real reason to pay: <b>personalization + alerts</b></span></div>
+    </div></div>
+
+    <div class="node"><div class="card">
+      <div class="ph"><span class="tag">PHASE 3</span><h3>Coach / advisor dashboard</h3></div>
+      <p class="feat">Multi-user management, client notes, career plans, role recommendations — the first clear B2B wedge for coaches, bootcamps, advisors.</p>
+      <div class="row"><span>Pricing: <b>seat-based</b></span><span>Metric: <b>clients per coach</b></span></div>
+    </div></div>
+
+    <div class="node"><div class="card">
+      <div class="ph"><span class="tag">PHASE 4</span><h3>Institution / workforce product</h3></div>
+      <p class="feat">School dashboards, employment centres, workforce programs, cohort analytics — sells to organizations with a mandate and a budget.</p>
+      <div class="row"><span>Revenue: <b>contracts</b></span><span>Metric: <b>cohorts onboarded</b></span></div>
+    </div></div>
+
+    <div class="node"><div class="card">
+      <div class="ph"><span class="tag">PHASE 5</span><h3>Market expansion</h3></div>
+      <p class="feat">Other Canadian cities, U.S. metros, industry-specific dashboards. The engine is already market-configurable — one config retargets it.</p>
+      <div class="row"><span>Metric: <b>markets live</b></span><span><b class="b">near-zero</b> cost per new market</span></div>
+    </div></div>
+
+    <div class="node"><div class="card">
+      <div class="ph"><span class="tag">PHASE 6</span><h3>Data / API layer</h3></div>
+      <p class="feat">API endpoints, embeddable widgets, B2B labour-market intelligence reports. The dashboard was the wedge; the clean, grounded data layer is the moat.</p>
+      <div class="row"><span>Highest-margin line: <b>sell the intelligence, not the interface</b></span></div>
+    </div></div>
+  </div>
+
+  <h3 style="margin:36px 0 4px;font-size:1.1rem"><span class="eyebrow">The value ladder</span></h3>
+  <table>
+    <tr><th>Phase</th><th>Who pays</th><th>For what</th><th>Moat</th></tr>
+    <tr><td><b>P0</b> Proof-of-work</td><td>—</td><td>credibility</td><td>the system design</td></tr>
+    <tr><td><b>P2</b> Personal layer</td><td>individuals</td><td>memory + alerts</td><td>personalization data</td></tr>
+    <tr><td><b>P3</b> Coach dashboard</td><td>coaches / bootcamps</td><td>manage clients</td><td>workflow lock-in</td></tr>
+    <tr><td><b>P4</b> Institution</td><td>schools / gov</td><td>cohort outcomes</td><td>contracts + integration</td></tr>
+    <tr><td><b>P6</b> API / data</td><td>businesses</td><td>grounded intelligence</td><td>the data layer</td></tr>
+  </table>
+
+  <footer>Career Intelligence — productization roadmap ·
+    <a href="https://career-intelligence-production.up.railway.app/" target="_blank">live app</a> ·
+    <a href="https://github.com/CREEDCONSULT/-career-intelligence-" target="_blank">repo</a> ·
+    Mesomachukwu Mezie-Akabudu · creedConsult</footer>
+</div>
+</body>
+</html>
