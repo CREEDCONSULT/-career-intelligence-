@@ -135,6 +135,56 @@ class StructuredImportAdapter(IngestionAdapter):
         )
 
 
+class JobBankImportAdapter(IngestionAdapter):
+    """Import a posting from the Job Bank open-data pipeline (M2 real source).
+
+    This is the one policy-compliant real source already accessible without
+    new credentials: the government open-data postings ingested by the
+    market pipeline (``job_postings`` table). The caller reads the row and
+    passes it here; the adapter converts it to a RawOpportunity with a
+    stable external id (``jobbank:<posting_id>``) so duplicate detection
+    works across imports. No scraping, no external network.
+    """
+
+    source = "jobbank"
+
+    _ROW_FIELDS = (
+        "id",
+        "title",
+        "location",
+        "salary_min",
+        "salary_max",
+        "posted_date",
+        "requirements_text",
+        "noc_code",
+    )
+
+    def can_parse(self, payload: Any) -> bool:
+        return isinstance(payload, dict) and "id" in payload and "title" in payload
+
+    def parse(self, payload: Any) -> RawOpportunity:
+        if not self.can_parse(payload):
+            raise ValueError(
+                "JobBankImportAdapter expects a job_postings row dict "
+                "with at least 'id' and 'title'"
+            )
+        title = (payload.get("title") or "").strip() or None
+        loc = (payload.get("location") or "").strip() or None
+        posted = payload.get("posted_date")
+        posted_s = str(posted)[:10] if posted is not None else None
+        desc = (payload.get("requirements_text") or "").strip() or None
+        return RawOpportunity(
+            source=self.source,
+            external_job_id=f"jobbank:{payload['id']}",
+            role_title=title,
+            location=loc,
+            posted_at=posted_s,
+            description_raw=desc,
+            notes=(f"NOC {payload['noc_code']}" if payload.get("noc_code") else None),
+            provenance=f"Job Bank open data posting {payload['id']}",
+        )
+
+
 # ---------------------------------------------------------------------------
 # Ingestion entry point
 # ---------------------------------------------------------------------------

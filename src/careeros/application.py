@@ -385,7 +385,14 @@ class ApplicationStore:
 # Document store (resume / cover-letter artifacts with evidence traceability)
 # ---------------------------------------------------------------------------
 
-DOC_TYPES = ("base_resume", "tailored_resume", "cover_letter", "keywords", "evidence_map")
+DOC_TYPES = (
+    "base_resume",
+    "tailored_resume",
+    "cover_letter",
+    "keywords",
+    "evidence_map",
+    "prep_pack",
+)
 
 
 @dataclass

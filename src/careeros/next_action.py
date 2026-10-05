@@ -97,6 +97,7 @@ def compute_next_action(
     has_tailored_resume: bool = False,
     has_cover_letter: bool = False,
     missing_required: Optional[list[str]] = None,
+    upcoming_interview=None,
     now: Optional[datetime] = None,
 ) -> NextAction:
     """One clear next action for one active application (deterministic)."""
@@ -118,6 +119,39 @@ def compute_next_action(
     # result's genuine gaps so callers don't have to recompute them.
     if missing_required is None and fit is not None:
         missing_required = [g.skill for g in fit.gaps]
+
+    # Interview-stage states with a scheduled interview produce a stage-
+    # specific prep action (the calendar fact overrides the generic one).
+    if (
+        state
+        in (ApplicationState.SCREENING, ApplicationState.INTERVIEW, ApplicationState.ASSESSMENT)
+        and upcoming_interview is not None
+        and upcoming_interview.scheduled_at is not None
+    ):
+        stage_label = (upcoming_interview.stage or "interview").replace("_", " ")
+        days_to = (upcoming_interview.scheduled_at.date() - today).days
+        when = upcoming_interview.scheduled_at.strftime("%a %b %d")
+        if days_to < 0:
+            action = f"Record the outcome of the {stage_label} interview"
+            rationale = (
+                f"Scheduled for {when} ({abs(days_to)} day(s) ago) - update notes and follow up."
+            )
+            state_weight = 4.5
+        else:
+            action = f"Prepare for the {stage_label} interview ({when})"
+            rationale = (
+                f"Scheduled in {days_to} day(s); prep status is '{upcoming_interview.prep_status}'."
+            )
+        score = round(state_weight * fit_weight * urgency, 2)
+        return NextAction(
+            opportunity_id=application.opportunity_id,
+            application_id=application.application_id,
+            state=state.value,
+            action=action,
+            rationale=rationale,
+            priority_score=score,
+            due_date=upcoming_interview.scheduled_at.date(),
+        )
 
     if state is ApplicationState.DISCOVERED:
         action = "Review the job description, then run the fit analysis"
@@ -240,6 +274,7 @@ def next_actions_for_store(
     evidence_store,
     doc_store: DocumentStore,
     *,
+    interview_store=None,
     fits: Optional[dict[int, FitResult]] = None,
     now: Optional[datetime] = None,
 ) -> list[NextAction]:
@@ -247,6 +282,8 @@ def next_actions_for_store(
 
     ``fits`` may carry precomputed FitResults keyed by opportunity_id; any
     opportunity without an entry is treated as not-yet-evaluated.
+    ``interview_store`` (optional) enables stage-specific interview prep
+    actions when an interview is scheduled for interview-stage applications.
     """
     from careeros.fit_engine import evaluate_fit
 
@@ -268,6 +305,9 @@ def next_actions_for_store(
         has_tailored = doc_store.latest(app.application_id, "tailored_resume") is not None
         has_cover = doc_store.latest(app.application_id, "cover_letter") is not None
         missing = [g.skill for g in fit.gaps][:3] if fit else None
+        upcoming = None
+        if interview_store is not None:
+            upcoming = interview_store.next_upcoming(app.application_id, now=now)
         action = compute_next_action(
             app,
             fit=fit,
@@ -276,6 +316,7 @@ def next_actions_for_store(
             has_tailored_resume=has_tailored,
             has_cover_letter=has_cover,
             missing_required=missing,
+            upcoming_interview=upcoming,
             now=now,
         )
         # The APPLIED follow-up clock is measured from the actual APPLIED event,

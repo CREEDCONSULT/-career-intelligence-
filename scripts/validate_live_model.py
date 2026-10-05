@@ -178,7 +178,7 @@ def main() -> int:
         },
     }
     # Compare live output vs deterministic fallback (same inputs)
-    live_md, fb_md = tailor.markdown.lower(), fallback.markdown.lower()
+    live_md = tailor.markdown.lower()
     report["comparison"] = {
         "fallback_excluded": fallback.excluded_claims,
         "live_keywords_count": len(tailor.keywords),
