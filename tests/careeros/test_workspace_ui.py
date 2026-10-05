@@ -9,7 +9,6 @@ base smoke (tests/test_app_smoke.py) covers render-only behavior there; this
 test isolates the M1 workspace by pointing CAREEROS_DB at a temp DuckDB.
 """
 
-import os
 import sys
 from pathlib import Path
 
