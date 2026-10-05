@@ -28,6 +28,13 @@ jobs:
       - name: Lint
         run: ruff check src scripts streamlit_app
 
+      - name: Populate job_skills_llm (CI fixture)
+        # CI-only deterministic dictionary extraction so the role-match corpus
+        # exists in test runs. NOT production data: provenance is recorded in
+        # job_skills_llm_meta (source='fixture:flashtext'). Production requires
+        # a live run of the same script with an LLM API key and no --fixture.
+        run: python scripts/extract_skills_llm.py --fixture
+
       - name: Test
         # Live-API tests self-skip without ANTHROPIC_API_KEY/OPENAI_API_KEY.
         # App smoke + eval-gold tests run against the committed demo DuckDB.
