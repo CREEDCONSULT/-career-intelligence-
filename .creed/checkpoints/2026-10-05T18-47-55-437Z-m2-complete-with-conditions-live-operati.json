@@ -1,0 +1,84 @@
+{
+  "title": "M2 complete with conditions: live operations + application intelligence on main @ a323424",
+  "note": null,
+  "next_action": "M2 accepted as COMPLETE WITH CONDITIONS. Founder actions to clear conditions: (1) set ANTHROPIC_API_KEY and run scripts/validate_live_model.py; (2) run scripts/extract_skills_llm.py without --fixture to populate production job_skills_llm; (3) authorize Gmail/Calendar/Drive via OAuth2 if live integrations wanted. M3 backlog ranked in CAREER_INTELLIGENCE_M2_REPORT.md section 14 (top: live-provider quality pass, Gmail thread import, Job Bank browse UI). Validation: use C:\\Users\\daunt\\AppData\\Local\\Programs\\Python\\Python311\\python.exe (bare python resolves to the Hermes venv); ruff check src scripts streamlit_app; pytest -q (expect 301 passed + 1 known data-gap failure + 3 live-skips); streamlit run streamlit_app/app.py (11 surfaces, unchanged from M1).",
+  "created_at": "2026-10-05T18:47:55.505Z",
+  "agent_id": "unknown",
+  "state_snapshot": {
+    "agent_id": "unknown",
+    "task_id": "task_ffc2eeecff",
+    "project": "-career-intelligence--main",
+    "objective": "Recover the Career Intelligence codebase to a known-good, testable baseline after the previous session corrupted app.py and destroyed transform.py; then document current state, gaps, integration boundaries, and the next milestone plan",
+    "current_plan": [],
+    "completed_work": [],
+    "unresolved_work": [],
+    "files_changed": [],
+    "test_state": {
+      "overall": "unknown",
+      "suites": {}
+    },
+    "decisions": [],
+    "known_failures": [],
+    "research_evidence": [],
+    "environment_state": {},
+    "next_action": "M2 accepted as COMPLETE WITH CONDITIONS. Founder actions to clear conditions: (1) set ANTHROPIC_API_KEY and run scripts/validate_live_model.py; (2) run scripts/extract_skills_llm.py without --fixture to populate production job_skills_llm; (3) authorize Gmail/Calendar/Drive via OAuth2 if live integrations wanted. M3 backlog ranked in CAREER_INTELLIGENCE_M2_REPORT.md section 14 (top: live-provider quality pass, Gmail thread import, Job Bank browse UI). Validation: use C:\\Users\\daunt\\AppData\\Local\\Programs\\Python\\Python311\\python.exe (bare python resolves to the Hermes venv); ruff check src scripts streamlit_app; pytest -q (expect 301 passed + 1 known data-gap failure + 3 live-skips); streamlit run streamlit_app/app.py (11 surfaces, unchanged from M1).",
+    "last_checkpoint": "C:\\Users\\daunt\\Downloads\\-career-intelligence--main\\-career-intelligence--main\\.creed\\checkpoints\\2026-10-05T12-55-37-184Z-m1-vertical-slice-complete-opportunity-e.json",
+    "checkpoints": [
+      "C:\\Users\\daunt\\Downloads\\-career-intelligence--main\\-career-intelligence--main\\.creed\\checkpoints\\2026-10-05T11-12-42-875Z-career-intelligence-recovered-to-known-g.json",
+      "C:\\Users\\daunt\\Downloads\\-career-intelligence--main\\-career-intelligence--main\\.creed\\checkpoints\\2026-10-05T12-55-37-184Z-m1-vertical-slice-complete-opportunity-e.json"
+    ],
+    "model": null,
+    "provider": null,
+    "created_at": "2026-10-05T11:12:42.783Z",
+    "updated_at": "2026-10-05T12:55:37.314Z",
+    "schema_hint": {
+      "agent_id": "string",
+      "task_id": "string",
+      "project": "string",
+      "objective": "string",
+      "current_plan": [
+        {
+          "step": "string",
+          "status": "pending|active|done|blocked"
+        }
+      ],
+      "completed_work": [
+        "string"
+      ],
+      "unresolved_work": [
+        "string"
+      ],
+      "files_changed": [
+        "string"
+      ],
+      "test_state": {
+        "overall": "unknown|pass|fail|partial",
+        "suites": {}
+      },
+      "decisions": [
+        "string"
+      ],
+      "known_failures": [
+        "string"
+      ],
+      "research_evidence": [
+        "string"
+      ],
+      "environment_state": {
+        "note": "arbitrary JSON"
+      },
+      "next_action": "string — THE resumption point",
+      "last_checkpoint": "ISO string",
+      "checkpoints": [
+        "paths"
+      ],
+      "model": "string (metadata only — §21)",
+      "provider": "string (metadata only — §21)"
+    }
+  },
+  "git": {
+    "status": "## main"
+  },
+  "managed_processes": [],
+  "environment_state": {}
+}
