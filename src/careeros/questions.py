@@ -129,7 +129,7 @@ class QuestionStore:
                     "SELECT COALESCE(MAX(question_id), 0) + 1 FROM application_questions"
                 ).fetchone()[0]
                 conn.execute(
-                    "INSERT INTO application_questions VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    "INSERT INTO application_questions VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     [
                         qid,
                         application_id,
@@ -179,7 +179,7 @@ class QuestionStore:
                     "SELECT COALESCE(MAX(question_id), 0) + 1 FROM application_questions"
                 ).fetchone()[0]
                 conn.execute(
-                    "INSERT INTO application_questions VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    "INSERT INTO application_questions VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     [
                         qid,
                         application_id,

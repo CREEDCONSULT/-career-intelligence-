@@ -54,6 +54,9 @@ def propose_profile_updates(
     fit_by_opp = {f.opportunity_id: f for f in fits}
 
     # 1) frequently requested skills that the evidence lacks
+    # (both genuine gaps AND transferables count: a transferable skill still
+    #  lacks direct evidence - the user should know it recurs even if they
+    #  have adjacent experience)
     requested = Counter()
     for opp in opportunities:
         fit = fit_by_opp.get(opp.opportunity_id)
@@ -62,7 +65,7 @@ def propose_profile_updates(
         for g in fit.gaps:
             requested[g.skill] += 1
         for t in fit.transferable:
-            requested[t.skill] += 0  # transferables don't count as missing
+            requested[t.skill] += 1
     for skill, n in requested.most_common():
         if n >= MIN_OCCURRENCES:
             suggestions.append(

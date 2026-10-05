@@ -44,6 +44,8 @@ def states_for_view(view: str) -> list[ApplicationState]:
 # Role family (deterministic keyword mapping, first match wins)
 # ---------------------------------------------------------------------------
 
+# Specific families are listed BEFORE generic ones so e.g. "Financial
+# Analyst" hits finance before the generic "analyst" needle in data.
 _ROLE_FAMILIES: list[tuple[str, list[str]]] = [
     (
         "ai/ml",
@@ -56,6 +58,46 @@ _ROLE_FAMILIES: list[tuple[str, list[str]]] = [
             "deep learning",
             "ai engineer",
             "ai scientist",
+        ],
+    ),
+    (
+        "finance",
+        ["finance", "financial", "accounting", "controller", "audit", "cpa"],
+    ),
+    (
+        "product",
+        ["product manager", "product owner", "product lead", "head of product"],
+    ),
+    (
+        "design",
+        ["designer", " ux", "ux designer", " ui", "user experience"],
+    ),
+    (
+        "hr",
+        [
+            "human resources",
+            "recruiter",
+            "recruiting",
+            "talent acquisition",
+            "people ops",
+            "people partner",
+        ],
+    ),
+    (
+        "healthcare",
+        ["nurse", "physician", "medical", "pharmacy", "dental", "health care", "healthcare"],
+    ),
+    (
+        "skilled trades",
+        [
+            "technician",
+            "electrician",
+            "plumber",
+            "mechanic",
+            "welder",
+            "carpenter",
+            "chef",
+            "cook",
         ],
     ),
     (
@@ -87,11 +129,18 @@ _ROLE_FAMILIES: list[tuple[str, list[str]]] = [
             "programmer",
         ],
     ),
-    ("product", ["product manager", "product owner", "product lead", "head of product"]),
-    ("design", ["designer", " ux", "ux designer", " ui", "user experience"]),
-    ("marketing", ["marketing", "seo", "content strategist", "growth", "brand", "social media"]),
-    ("sales", ["sales", "account executive", "business development", "account manager", "bd "]),
-    ("consulting", ["consultant", "consulting", "advisor", "practice lead"]),
+    (
+        "marketing",
+        ["marketing", "seo", "content strategist", "growth", "brand", "social media"],
+    ),
+    (
+        "sales",
+        ["sales", "account executive", "business development", "account manager", "bd "],
+    ),
+    (
+        "consulting",
+        ["consultant", "consulting", "advisor", "practice lead"],
+    ),
     (
         "operations",
         [
@@ -105,26 +154,6 @@ _ROLE_FAMILIES: list[tuple[str, list[str]]] = [
             "scrum master",
             "agile coach",
         ],
-    ),
-    ("finance", ["finance", "financial", "accounting", "controller", "audit", "cpa"]),
-    (
-        "hr",
-        [
-            "human resources",
-            "recruiter",
-            "recruiting",
-            "talent acquisition",
-            "people ops",
-            "people partner",
-        ],
-    ),
-    (
-        "skilled trades",
-        ["technician", "electrician", "plumber", "mechanic", "welder", "carpenter", "chef", "cook"],
-    ),
-    (
-        "healthcare",
-        ["nurse", "physician", "medical", "pharmacy", "dental", "health care", "healthcare"],
     ),
 ]
 
