@@ -26,90 +26,12 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "streamlit_app"))
 
-
-def _build_fixture():
-    """Deterministic real-world-shaped opportunity + evidence ledger."""
-    from careeros.evidence import Evidence
-    from careeros.opportunity import Opportunity
-
-    opportunity = Opportunity(
-        opportunity_id=1,
-        source="validation",
-        role_title="Senior Analytics Engineer",
-        company="Northwind Analytics",
-        location="Toronto",
-        work_mode="hybrid",
-        employment_type="full-time",
-        salary_min=120000.0,
-        salary_max=145000.0,
-        currency="CAD",
-        description_raw=(
-            "We need strong Python, SQL and Airflow skills; dbt and Docker are "
-            "nice to have. You will own the warehouse and pipeline roadmap, "
-            "partner with data science, and raise data quality. 5+ years."
-        ),
-        description_normalized=(
-            "Senior Analytics Engineer Northwind Analytics Toronto hybrid "
-            "Python SQL Airflow dbt Docker warehouse pipeline roadmap"
-        ),
-        required_skills=["Python", "SQL", "Airflow"],
-        preferred_skills=["dbt", "Docker"],
-        seniority="senior",
-    )
-    evidence = [
-        Evidence(
-            evidence_id=1,
-            type="employment",
-            title="Analytics Engineer",
-            organization="Old Co",
-            start_date="2020-01-01",
-            end_date="2024-05-01",
-            description=(
-                "Built Python/SQL pipelines in Airflow; cut refresh "
-                "times 40%. Owned the warehouse roadmap."
-            ),
-            skills=["Python", "SQL", "Airflow"],
-            verification_status="documented",
-        ),
-        Evidence(
-            evidence_id=2,
-            type="project",
-            title="dbt warehouse migration",
-            description="Rebuilt the warehouse with dbt and Docker.",
-            skills=["dbt", "Docker"],
-            verification_status="self_reported",
-        ),
-        Evidence(
-            evidence_id=3,
-            type="certification",
-            title="Empty certification slot",
-            description="Placeholder that must never be cited.",
-            claims_allowed=False,
-            verification_status="self_reported",
-        ),
-    ]
-    base_resume = (
-        "Analytics engineer. Built and owned ETL pipelines (Python, SQL, Airflow) "
-        "at Old Co. Led a dbt warehouse migration with Docker. Cut refresh times 40%."
-    )
-    return opportunity, evidence, base_resume
-
-
-def _validate_contract(result, valid_ids: set[int], label: str) -> list[str]:
-    """Return a list of contract violations (empty = valid)."""
-    problems = []
-    if not result.markdown or not result.markdown.strip():
-        problems.append(f"{label}: empty markdown")
-    bad = [i for i in result.evidence_used if i not in valid_ids]
-    if bad:
-        problems.append(f"{label}: cited evidence IDs not in ledger: {bad}")
-    if set(result.evidence_used) & set(result.excluded_claims):
-        problems.append(f"{label}: evidence/excluded sets overlap")
-    # honesty check: excluded keywords must not appear as claims in the output
-    for claim in result.excluded_claims:
-        if claim.lower() in (result.markdown or "").lower():
-            problems.append(f"{label}: excluded claim '{claim}' appears in output anyway")
-    return problems
+# Shared helpers live in the installed careeros package so the pytest live
+# tests can import them without path hacks.
+from careeros.live_validation import (  # noqa: E402
+    build_validation_fixture as _build_fixture,
+    validate_evidence_contract as _validate_contract,
+)
 
 
 def main() -> int:

@@ -30,15 +30,15 @@ def test_live_tailor_validates_evidence_contract():
     from llm.config import LLMConfig
     from llm.features.evidence_resume import tailor_evidence_based
     from llm.gateway import Gateway
-    from scripts.validate_live_model import _build_fixture, _validate_contract
+    from careeros.live_validation import build_validation_fixture, validate_evidence_contract
 
     cfg = LLMConfig.from_env()
     gw = Gateway(cfg, cache=ResponseCache(ROOT / "data" / "processed" / "llm_cache.duckdb"))
-    opportunity, evidence, base_resume = _build_fixture()
+    opportunity, evidence, base_resume = build_validation_fixture()
     valid_ids = {e.evidence_id for e in evidence if e.claims_allowed}
 
     result = tailor_evidence_based(base_resume, opportunity, evidence, gw)
-    violations = _validate_contract(result, valid_ids, "tailor")
+    violations = validate_evidence_contract(result, valid_ids, "tailor")
     assert not violations, violations
     assert result.model_used is True
     assert result.markdown.strip()
@@ -49,15 +49,15 @@ def test_live_cover_letter_validates_evidence_contract():
     from llm.config import LLMConfig
     from llm.features.evidence_resume import cover_letter_evidence_based
     from llm.gateway import Gateway
-    from scripts.validate_live_model import _build_fixture, _validate_contract
+    from careeros.live_validation import build_validation_fixture, validate_evidence_contract
 
     cfg = LLMConfig.from_env()
     gw = Gateway(cfg, cache=ResponseCache(ROOT / "data" / "processed" / "llm_cache.duckdb"))
-    opportunity, evidence, base_resume = _build_fixture()
+    opportunity, evidence, base_resume = build_validation_fixture()
     valid_ids = {e.evidence_id for e in evidence if e.claims_allowed}
 
     result = cover_letter_evidence_based(base_resume, opportunity, evidence, gw)
-    violations = _validate_contract(result, valid_ids, "cover_letter")
+    violations = validate_evidence_contract(result, valid_ids, "cover_letter")
     assert not violations, violations
     assert result.markdown.strip()
 
