@@ -24,6 +24,9 @@ dependencies = [
     "litellm>=1.50.0", "sqlglot>=25.0.0", "datacompy>=0.11.0",
     "qdrant-client[fastembed]>=1.12.0",
     "markitdown[pdf,docx]>=0.1.0",
+    "google-auth>=2.60.0",
+    "google-auth-oauthlib>=1.5.0",
+    "google-api-python-client>=2.200.0",
 ]
 
 [project.optional-dependencies]

@@ -25,6 +25,12 @@ Thumbs.db
 # Streamlit
 .streamlit/secrets.toml
 
+# Google OAuth (M2.1) — tokens/credentials are NEVER committed
+data/processed/google_credentials.json
+data/processed/google_tokens.json
+google_credentials.json
+google_tokens.json
+
 # Playwright
 playwright-report/
 test-results/
