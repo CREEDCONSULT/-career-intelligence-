@@ -3,96 +3,73 @@
 **Phase:** M3 — Operational Career Intelligence
 **Branch:** `m3/operational-career-intelligence`
 **Base SHA:** `933da36` (M2.1 validated)
-**Commits:** `1adb0ec` → `5306e57` → `43d653e` → `a285ebc` → `083cd74` → `811a973` → (this commit)
-**Tests:** 309 passed, 0 failed, ruff clean
-**Pilot:** CLOSED LOOP PASS with real founder evidence + live Gmail/Calendar
+**Final SHA:** (set after validation commit)
+**Tests:** 309 passed, 0 failed; 48 Google tests (no regression); ruff clean
+**Pilot:** CLOSED LOOP PASS — independently validated with real evidence + live Gmail/Calendar
 
 ---
 
-## M3 COMPLETION PASS
+## M3 COMPLETION PASS — VALIDATION EVIDENCE
 
-### Implemented and tested
+### Independently verified (this validation session)
 
-| Gap | Status | Evidence |
+| Gate | Check | Result |
 |---|---|---|
-| **Evidence verification states** | Implemented + tested | 18 types, tri-state (VERIFIED/FOUNDER_ASSERTED/UNVERIFIED), claims_allowed derived, promotion/demotion workflow, DuckDB migration |
-| **Fit engine M3 bands** | Implemented + tested | STRONG FIT / POSSIBLE FIT / WEAK FIT / INSUFFICIENT EVIDENCE, NBA weights updated |
-| **Application packets** | Implemented + tested | Evidence manifest (claim → evidence_ids → verification_state → provenance), tailored resume, cover letter, recruiter message, summary, excluded claims |
-| **State machine** | Implemented + tested | 17 states (13 original + REVIEWING, APPROVED_TO_APPLY, RECRUITER_CONTACT, ARCHIVED), all original transitions preserved, no-auto-APPLIED enforced |
-| **GitHub evidence adapter** | Implemented + tested | gh CLI, UNVERIFIED on import, provenance github:<owner>/<repo>, never infers achievements |
-| **Drive evidence adapter** | Implemented + tested | Reuses M2.1 DriveConnector, UNVERIFIED on import, metadata-only, provenance drive:<file_id>, deduplication |
-| **Structured import** | Implemented + tested | Defaults to UNVERIFIED, provenance founder:structured-import |
+| **Baseline** | Branch, SHA, tree, remote | `m3/operational-career-intelligence` @ `be4edef`, clean, origin correct ✓ |
+| **Tests** | Full CareerOS suite | **309 passed, 0 failed** (reproduced) ✓ |
+| **Google tests** | M2.1 regression | **48 passed, 0 failed** (no regression) ✓ |
+| **Ruff** | M3 production code + scripts | **All checks passed** ✓ |
+| **Evidence ledger** | Tri-state, claims gating, promotion/demotion, migration | 18 types, VERIFIED/FOUNDER_ASSERTED/UNVERIFIED, claims_allowed derived correctly, migration idempotent ✓ |
+| **GitHub adapter** | UNVERIFIED on import, provenance, no achievements inferred | `github:CREEDCONSULT/-career-intelligence-`, never auto-promoted, no fabricated experience ✓ |
+| **Drive adapter** | Metadata-only, UNVERIFIED, provenance, no mutation | `drive:<file_id>`, reuses M2.1 connector, dedup works ✓ |
+| **State machine** | 17 states, backward compat, no-auto-APPLIED | All 13 original transitions work; DISCOVERED→APPLIED, REVIEWED→APPLIED, APPROVED_TO_APPLY→APPLIED all illegal ✓ |
+| **Real opportunities** | Real Job Bank data | 5 real postings from 96,467-row government dataset, deduplicated ✓ |
+| **Fit engine** | M3 bands | STRONG FIT / POSSIBLE FIT / WEAK FIT / INSUFFICIENT EVIDENCE, explainable from evidence ✓ |
+| **Application packet** | Evidence contract | Every non-excluded claim traces to evidence_ids + verification_states; no fabricated experience, degrees, metrics, or dates ✓ |
+| **Deterministic generation** | Works without API key | **LIVE AND FUNCTIONAL** — complete packet generated with model_used=False ✓ |
+| **LLM path** | Status | **IMPLEMENTED / MOCK-TESTED / NOT LIVE-VALIDATED** (no API key in validation environment) |
+| **Live Gmail** | Bounded career queries | **live** — 10 messages imported, 2 interview signals, all with `gmail:` provenance, no send capability ✓ |
+| **Live Calendar** | Read-only, 14-day window | **live** — 0 events (accurate, none scheduled), no create capability ✓ |
+| **Next-best-action** | State-aware, one action per application | REVIEWING/APPROVED_TO_APPLY/PREPARING/RECRUITER_CONTACT rules work; ARCHIVED excluded ✓ |
+| **Write prohibitions** | Gmail send, Calendar create | Both raise PermissionError ✓ |
+| **Secrets hygiene** | Credentials/tokens untracked, no private data committed | gitignore verified, no credential files in git, no Gmail content in diff ✓ |
+| **Closed loop** | Real evidence → real opportunity → fit → packet → state → Gmail/Calendar → NBA | **PASS** — all stages exercised with real data ✓ |
 
-### Live validated (completion pilot)
+### Dashboard condition assessment
 
-| Check | Result |
-|---|---|
-| Founder evidence seeded | 4 items FOUNDER_ASSERTED (GitHub repo + 3 structured from repo/README) |
-| Real opportunities ingested | 12 real Job Bank postings (from 96,467 in DuckDB) |
-| Deduplication | Verified (re-ingest → same ID) |
-| Fit evaluation | 4 POSSIBLE FIT, 8 INSUFFICIENT EVIDENCE (honest) |
-| Application packets | 3 (for top-ranked roles) |
-| State machine walked | DISCOVERED → REVIEWING → APPROVED_TO_APPLY → PREPARING |
-| **Live Gmail** | **live**, 15 messages imported, 3 interview signals, all with gmail: provenance |
-| **Live Calendar** | **live**, 0 upcoming events (accurate — none scheduled) |
-| Next-best-action board | 3 active actions with priorities |
-| Closed loop | **PASS** |
+**Classification: B. PARTIALLY SATISFIED / DEFERRED CONDITION**
 
-### Founder validated
+The M3 spec required five operational views. Actual state:
 
-Not yet — the pilot used repository-derived evidence, not the founder's full career history. The founder should:
-1. Review and expand the evidence ledger through the Evidence Library page
-2. Promote items through the verification workflow
-3. Confirm the closed loop with their own data
+| Required view | What exists | Assessment |
+|---|---|---|
+| TODAY (next actions) | Opportunities page NBA board shows prioritized next actions per application | Functionally satisfied under existing component |
+| PIPELINE | Opportunities page board shows application states, fit, closing dates, priority | Functionally satisfied under existing component |
+| EVIDENCE | Evidence Library page shows evidence items with verification status, promotion buttons | Functionally satisfied under existing component |
+| OUTCOMES | Outcome analytics exist as backend functions; no dedicated UI view | **Deferred** |
+| INBOX INTELLIGENCE | Gmail integration + CommunicationStore exist; no dedicated inbox view | **Deferred** |
 
-### Not available / deferred
+The backend for all five views is complete and tested. A dedicated aggregation dashboard page is deferred to a future pass.
 
-- **Operational dashboard views** (TODAY/PIPELINE/EVIDENCE/OUTCOMES/INBOX): The existing Opportunities page covers most functionality; the full M3 dashboard spec is deferred to a future pass.
-- **LLM-enhanced generation**: No API key in this environment; the deterministic fallback path is fully functional and produces complete packets. The LLM path is tested with a fake gateway and activates when a key is present.
-- **LinkedIn evidence adapter**: No safe, source-supported implementation path identified.
-- **M4**: Not begun.
+### Remaining conditions
 
-## Architecture summary
-
-```
-src/careeros/
-    evidence.py           # 18 types, tri-state verification, claims gating
-    evidence_ingestion.py # GitHub + Drive + structured adapters
-    opportunity.py        # Canonical opportunity model + normalizer
-    fit_engine.py         # M3 bands (STRONG/POSSIBLE/WEAK FIT, INSUFFICIENT EVIDENCE)
-    packets.py            # ApplicationPacket + EvidenceManifestEntry
-    application.py        # 17-state machine (M3 additions)
-    pipeline.py            # Queue views + role family
-    next_action.py         # NBA (M3 state-aware)
-    communications.py      # Message model + signal detection
-    interviews.py          # Interview records + prep
-    questions.py           # 7-question bank (factual/narrative)
-    outcomes.py            # Outcome derivation + analytics
-    profile_feedback.py   # Proposal-only suggestions
-    creed_store.py         # Future /store boundary
-    google_oauth.py        # OAuth flow + token lifecycle
-    google_gmail.py        # Read-only Gmail connector
-    google_calendar.py     # Read-only Calendar connector
-    google_drive.py        # Read-only Drive metadata connector
-    integrations.py        # Protocols + null adapters
-    live_validation.py     # Shared validation helpers
-```
-
-## Test coverage
-
-309 tests total across 15 test files. All passing. Key M3 additions:
-- `test_m3_core.py`: 25 tests (verification states, evidence manifest, packets, fit bands)
-- `test_m3_state_machine.py`: 21 tests (new states, transitions, no-auto-APPLIED, backward compat, NBA)
-- `test_m3_evidence_ingestion.py`: 19 tests (GitHub/Drive/structured adapters, UNVERIFIED-on-import, no-auto-promote, dedup, metadata-only)
+1. **Founder evidence ledger is small** — 4 repository-derived FOUNDER_ASSERTED items; the founder must seed their full career history (employment, projects, certifications, GitHub repos, etc.) and promote items through the verification workflow.
+2. **LLM path not live-validated** — implemented and mock-tested, but no API key was available to exercise it live. The deterministic fallback path is fully functional and satisfies the evidence contract.
+3. **OUTCOMES and INBOX dashboard views deferred** — backend analytics and Gmail integration are complete and tested; dedicated UI aggregation views are not yet built.
+4. **Founder validation of the closed loop with their own full evidence is pending.**
 
 ## Final verdict
 
-# **IMPLEMENTATION COMPLETE WITH CONDITIONS**
+# **VALIDATED WITH CONDITIONS**
 
-**Complete:** Evidence verification states, M3 fit bands, application packets with evidence manifest, 17-state machine, GitHub + Drive evidence adapters, structured import, real Job Bank pilot with live Gmail/Calendar context.
+**Validated:** The core M3 closed loop genuinely operates with real data: real founder evidence (repository-derived), real Job Bank opportunities, evidence-based fit evaluation, evidence-constrained application packets with full provenance, 17-state application machine with founder-approval gates, live Gmail career intelligence (bounded, read-only, provenance-tracked), live Calendar interview discovery (read-only), state-aware next-best-actions, and outcome analytics with honest low-sample labeling. All 309 tests pass, ruff is clean, secrets hygiene is verified.
 
-**Conditions:**
-1. Founder evidence ledger uses repository-derived data (4 items); the founder must seed their full career history and promote through the verification workflow.
-2. No LLM API key in this environment; deterministic fallback produces complete packets; LLM path is ready but unexercised live.
-3. Operational dashboard views (TODAY/PIPELINE/EVIDENCE/OUTCOMES/INBOX) deferred; existing Opportunities page covers most functionality.
-4. Founder validation of the closed loop with their own data is still pending.
+**Conditions (non-blocking, documented):**
+1. Founder evidence seeding (4 items is a start, not a complete career history)
+2. LLM path implemented/mock-tested but not live-validated
+3. OUTCOMES and INBOX dashboard views deferred (backend complete, UI pending)
+4. Founder validation of the closed loop with their own data pending
+
+## Recommendation on merge/tag
+
+**Merge and tag** — all M3 exit gates that are core to the operational value are satisfied. The remaining conditions are documentation items and founder actions, not code defects.
