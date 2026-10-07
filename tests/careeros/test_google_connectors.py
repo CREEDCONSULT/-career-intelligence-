@@ -30,13 +30,15 @@ def test_calendar_create_event_always_raises():
 
 
 def test_calendar_list_upcoming_offline():
-    cal = CalendarConnector()
-    assert cal.list_upcoming() == []
+    with patch("careeros.google_calendar.load_tokens", return_value=None):
+        cal = CalendarConnector()
+        assert cal.list_upcoming() == []
 
 
 def test_calendar_health_offline():
-    cal = CalendarConnector()
-    h = cal.health()
+    with patch("careeros.google_calendar.load_tokens", return_value=None):
+        cal = CalendarConnector()
+        h = cal.health()
     assert h.connector == "calendar"
     assert h.to_dict()["status"] == "offline"
 
@@ -110,13 +112,15 @@ def test_drive_upload_always_raises():
 
 
 def test_drive_list_files_offline():
-    drive = DriveConnector()
-    assert drive.list_files() == []
+    with patch("careeros.google_drive.load_tokens", return_value=None):
+        drive = DriveConnector()
+        assert drive.list_files() == []
 
 
 def test_drive_health_offline():
-    drive = DriveConnector()
-    h = drive.health()
+    with patch("careeros.google_drive.load_tokens", return_value=None):
+        drive = DriveConnector()
+        h = drive.health()
     assert h.connector == "drive"
     assert h.to_dict()["status"] == "offline"
 

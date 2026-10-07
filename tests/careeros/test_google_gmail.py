@@ -57,16 +57,20 @@ def test_career_queries_cover_required_signals():
 
 
 # -- offline/null behavior ------------------------------------------------------------------
+# These tests mock load_tokens -> None so they are deterministic regardless
+# of whether the founder's real tokens are present on this machine.
 
 
 def test_search_threads_offline_returns_empty():
-    gmail = GmailConnector()
-    assert gmail.search_threads("any query") == []
+    with patch("careeros.google_gmail.load_tokens", return_value=None):
+        gmail = GmailConnector()
+        assert gmail.search_threads("any query") == []
 
 
 def test_health_offline():
-    gmail = GmailConnector()
-    h = gmail.health()
+    with patch("careeros.google_gmail.load_tokens", return_value=None):
+        gmail = GmailConnector()
+        h = gmail.health()
     assert h.connector == "gmail"
     assert h.authorized is False
     assert h.to_dict()["status"] == "offline"
