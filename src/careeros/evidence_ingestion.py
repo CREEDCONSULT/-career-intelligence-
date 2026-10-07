@@ -60,19 +60,28 @@ def github_repo_to_evidence(owner: str, repo: str, data: dict) -> Evidence:
     infers achievements, responsibility, or expertise from repo existence.
     The founder must review and promote before use.
     """
-    languages = [
-        lang.get("name", "")
-        for lang in (data.get("languages") or {}).get("edges", [])
-        if lang.get("name")
-    ]
+    # Languages: gh CLI returns a list; GitHub API returns {"edges": [...]}
+    raw_langs = data.get("languages") or []
+    if isinstance(raw_langs, dict):
+        languages = [
+            lang.get("name", "") for lang in raw_langs.get("edges", []) if lang.get("name")
+        ]
+    elif isinstance(raw_langs, list):
+        languages = [lang if isinstance(lang, str) else lang.get("name", "") for lang in raw_langs]
+    else:
+        languages = []
     if not languages and data.get("primaryLanguage"):
-        languages = [data["primaryLanguage"].get("name", "")]
+        pl = data["primaryLanguage"]
+        languages = [pl if isinstance(pl, str) else pl.get("name", "")]
 
-    topics = [
-        t.get("name", "")
-        for t in (data.get("repositoryTopics") or {}).get("nodes", [])
-        if t.get("name")
-    ]
+    # Topics: gh CLI returns a list; GitHub API returns {"nodes": [...]}
+    raw_topics = data.get("repositoryTopics") or []
+    if isinstance(raw_topics, dict):
+        topics = [t.get("name", "") for t in raw_topics.get("nodes", []) if t.get("name")]
+    elif isinstance(raw_topics, list):
+        topics = [t if isinstance(t, str) else t.get("name", "") for t in raw_topics]
+    else:
+        topics = []
 
     # Skills from languages (deterministic, safe — they're what the repo uses)
     skills = [lang for lang in languages if lang]
