@@ -31,6 +31,7 @@ def _ev(i, **kw):
         title="Data Engineer",
         organization="Beta Ltd",
         description="Built ETL pipelines with Python, SQL and Airflow on AWS.",
+        verification_state="VERIFIED",  # M3: fit engine tests use verified evidence
     )
     base.update(kw)
     return Evidence(**base)
@@ -101,7 +102,7 @@ def test_raw_nontaxonomy_requirement_matched_by_literal_mention():
 
 
 def test_claims_not_allowed_excluded():
-    items = [_ev(1, claims_allowed=False, skills=["Python", "SQL", "AWS", "Airflow"])]
+    items = [_ev(1, verification_state="UNVERIFIED", skills=["Python", "SQL", "AWS", "Airflow"])]
     fit = evaluate_fit(_opp(), items, today=date(2026, 10, 5))
     assert fit.coverage_hard == 0.0
 

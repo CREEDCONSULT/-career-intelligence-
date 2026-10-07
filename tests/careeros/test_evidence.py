@@ -2,7 +2,13 @@
 
 import pytest
 
-from careeros.evidence import Evidence, EvidenceStore, EVIDENCE_TYPES, VERIFICATION_STATUSES
+from careeros.evidence import (
+    Evidence,
+    EvidenceStore,
+    EVIDENCE_TYPES,
+    VERIFICATION_STATUSES,
+    VERIFICATION_STATES,
+)
 
 
 @pytest.fixture
@@ -39,13 +45,16 @@ def test_add_rejects_unknown_type(store):
         store.add(_ev(type="daydream"))
 
 
-def test_add_rejects_unknown_verification_status(store):
-    with pytest.raises(ValueError):
-        store.add(_ev(verification_status="guaranteed"))
+def test_add_maps_unknown_legacy_status_to_unverified(store):
+    """M3: unknown legacy verification_status maps to UNVERIFIED, not an error."""
+    ev = store.add(_ev(verification_status="guaranteed"))
+    assert ev.verification_state == "UNVERIFIED"
+    assert ev.claims_allowed is False
 
 
-def test_valid_types_and_statuses_match_spec():
-    assert set(EVIDENCE_TYPES) == {
+def test_valid_types_match_m3_spec():
+    """M3: 18 evidence types (8 from M1 + 10 new for M3)."""
+    m1_types = {
         "employment",
         "project",
         "skill",
@@ -55,7 +64,21 @@ def test_valid_types_and_statuses_match_spec():
         "education",
         "portfolio",
     }
-    assert set(VERIFICATION_STATUSES) == {"self_reported", "documented", "verified"}
+    m3_new = {
+        "contract_work",
+        "founder_work",
+        "product",
+        "case_study",
+        "technical_skill",
+        "business_consulting",
+        "github_repository",
+        "report",
+        "presentation",
+        "recommendation",
+    }
+    assert m1_types <= set(EVIDENCE_TYPES)
+    assert m3_new <= set(EVIDENCE_TYPES)
+    assert set(VERIFICATION_STATES) == {"UNVERIFIED", "FOUNDER_ASSERTED", "VERIFIED"}
 
 
 def test_update_fields_whitelist(store):
@@ -78,8 +101,10 @@ def test_remove(store):
 
 def test_supported_skills_includes_explicit_and_extracted(store):
     """Explicit skills count; skills mentioned only in the description also count
-    (deterministic whole-token extraction), keeping traceability to the item."""
-    store.add(_ev(skills=["Python"], description="Led Kubernetes rollout on AWS."))
+    (deterministic whole-token extraction), keeping traceability to the item.
+    M3: evidence must be VERIFIED (or permitted FOUNDER_ASSERTED) to support skills."""
+    ev = store.add(_ev(skills=["Python"], description="Led Kubernetes rollout on AWS."))
+    store.promote_to_verified(ev.evidence_id)
     supported = store.supported_skills()
     assert "python" in supported
     assert "kubernetes" in supported

@@ -1,4 +1,4 @@
-"""Tests: outcomes derivation, analytics, low-sample labeling, profile feedback."""
+﻿"""Tests: outcomes derivation, analytics, low-sample labeling, profile feedback."""
 
 from datetime import datetime, timedelta
 
@@ -231,7 +231,7 @@ def test_profile_feedback_proposes_recurring_gaps():
     ev = [
         Evidence(
             evidence_id=1,
-            type="employment",
+            type="employment", verification_state="VERIFIED",
             title="Dev",
             description="Python work",
             skills=["Python"],
@@ -295,7 +295,7 @@ def test_winning_evidence_and_requested_strength_proposed():
     ev = [
         Evidence(
             evidence_id=1,
-            type="employment",
+            type="employment", verification_state="VERIFIED",
             title="Data platform lead",
             description="Python and SQL pipelines",
             skills=["Python", "SQL"],
@@ -306,3 +306,4 @@ def test_winning_evidence_and_requested_strength_proposed():
     kinds = [s.kind for s in suggestions]
     assert "requested_skill" in kinds
     assert "winning_evidence" in kinds
+

@@ -1,4 +1,4 @@
-"""Tests: evidence-based resume generation + traceability (fake gateway, no API)."""
+﻿"""Tests: evidence-based resume generation + traceability (fake gateway, no API)."""
 
 import json
 
@@ -36,6 +36,7 @@ def _evidence():
         Evidence(
             evidence_id=1,
             type="employment",
+            verification_state="VERIFIED",
             title="Data Engineer",
             organization="Beta",
             description="Python, SQL, Airflow on AWS.",
@@ -47,6 +48,7 @@ def _evidence():
             title="Migration",
             description="Docker rollout.",
             skills=["Docker"],
+            verification_state="VERIFIED",
         ),
     ]
 

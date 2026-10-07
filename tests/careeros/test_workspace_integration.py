@@ -1,4 +1,4 @@
-"""Integration tests: full M1 vertical slice on a temp database.
+﻿"""Integration tests: full M1 vertical slice on a temp database.
 
 Ingest -> evidence -> fit -> application state machine -> documents ->
 next-best-action, i.e. the workspace data flow end-to-end.
@@ -55,6 +55,7 @@ def test_full_vertical_slice(db):
         Evidence(
             evidence_id=0,
             type="employment",
+            verification_state="VERIFIED",
             title="Analytics Engineer",
             organization="Old Co",
             start_date="2020-01-01",
@@ -70,6 +71,7 @@ def test_full_vertical_slice(db):
             title="dbt migration",
             description="Rebuilt warehouse with dbt and Docker.",
             skills=["dbt", "Docker"],
+            verification_state="VERIFIED",
         )
     )
 
@@ -144,6 +146,7 @@ def test_board_ranks_two_opportunities_by_state_and_urgency(db):
         Evidence(
             evidence_id=0,
             type="employment",
+            verification_state="VERIFIED",
             title="Data Engineer",
             description="Python and SQL pipelines.",
             skills=["Python", "SQL"],

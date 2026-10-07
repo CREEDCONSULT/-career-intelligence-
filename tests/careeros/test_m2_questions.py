@@ -37,6 +37,7 @@ def _evidence():
             title="Data Engineer",
             description="Built Python/SQL pipelines.",
             skills=["Python", "SQL"],
+            verification_state="VERIFIED",
         ),
     ]
 
