@@ -15,19 +15,30 @@ from careeros.application import ApplicationState
 from careeros.opportunity import Opportunity
 
 #: Queue view -> application states (order = board filter order).
+#: M3 additions: REVIEWING, APPROVED_TO_APPLY, RECRUITER_CONTACT, ARCHIVED
 PIPELINE_VIEWS: dict[str, list[ApplicationState]] = {
     "New": [ApplicationState.DISCOVERED],
-    "Review": [ApplicationState.REVIEWED],
+    "Review": [
+        ApplicationState.REVIEWED,
+        ApplicationState.REVIEWING,
+        ApplicationState.APPROVED_TO_APPLY,
+    ],
     "Shortlisted": [ApplicationState.SHORTLISTED],
     "Preparing": [ApplicationState.PREPARING, ApplicationState.READY_TO_APPLY],
     "Applied": [ApplicationState.APPLIED],
     "Interview": [
         ApplicationState.SCREENING,
+        ApplicationState.RECRUITER_CONTACT,
         ApplicationState.INTERVIEW,
         ApplicationState.ASSESSMENT,
         ApplicationState.OFFER,
     ],
-    "Closed": [ApplicationState.REJECTED, ApplicationState.WITHDRAWN, ApplicationState.CLOSED],
+    "Closed": [
+        ApplicationState.REJECTED,
+        ApplicationState.WITHDRAWN,
+        ApplicationState.CLOSED,
+        ApplicationState.ARCHIVED,
+    ],
 }
 ALL_VIEWS = ["All"] + list(PIPELINE_VIEWS.keys())
 

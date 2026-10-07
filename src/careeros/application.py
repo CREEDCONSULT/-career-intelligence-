@@ -24,53 +24,84 @@ import duckdb
 class ApplicationState(str, Enum):
     DISCOVERED = "DISCOVERED"
     REVIEWED = "REVIEWED"
+    REVIEWING = "REVIEWING"  # M3: alias of REVIEWED (founder is reviewing)
+    APPROVED_TO_APPLY = "APPROVED_TO_APPLY"  # M3: explicit founder approval gate
     SHORTLISTED = "SHORTLISTED"
     PREPARING = "PREPARING"
     READY_TO_APPLY = "READY_TO_APPLY"
     APPLIED = "APPLIED"
     SCREENING = "SCREENING"
+    RECRUITER_CONTACT = "RECRUITER_CONTACT"  # M3: alias of SCREENING (recruiter reached out)
     INTERVIEW = "INTERVIEW"
     ASSESSMENT = "ASSESSMENT"
     OFFER = "OFFER"
     REJECTED = "REJECTED"
     WITHDRAWN = "WITHDRAWN"
     CLOSED = "CLOSED"
+    ARCHIVED = "ARCHIVED"  # M3: terminal, stale/expired
 
 
 #: Explicit transition table. Terminal states map to an empty set.
+#: M3 additions: REVIEWING, APPROVED_TO_APPLY, RECRUITER_CONTACT, ARCHIVED.
+#: All pre-M3 transitions are preserved (backward compatible).
 TRANSITIONS: dict[ApplicationState, set[ApplicationState]] = {
     ApplicationState.DISCOVERED: {
         ApplicationState.REVIEWED,
+        ApplicationState.REVIEWING,
         ApplicationState.WITHDRAWN,
         ApplicationState.CLOSED,
+        ApplicationState.ARCHIVED,
     },
     ApplicationState.REVIEWED: {
         ApplicationState.SHORTLISTED,
+        ApplicationState.REVIEWING,
+        ApplicationState.APPROVED_TO_APPLY,
         ApplicationState.WITHDRAWN,
         ApplicationState.CLOSED,
+        ApplicationState.ARCHIVED,
+    },
+    ApplicationState.REVIEWING: {
+        ApplicationState.SHORTLISTED,
+        ApplicationState.APPROVED_TO_APPLY,
+        ApplicationState.WITHDRAWN,
+        ApplicationState.CLOSED,
+        ApplicationState.ARCHIVED,
     },
     ApplicationState.SHORTLISTED: {
         ApplicationState.PREPARING,
+        ApplicationState.APPROVED_TO_APPLY,
         ApplicationState.WITHDRAWN,
         ApplicationState.CLOSED,
+        ApplicationState.ARCHIVED,
+    },
+    ApplicationState.APPROVED_TO_APPLY: {
+        ApplicationState.PREPARING,
+        ApplicationState.READY_TO_APPLY,
+        ApplicationState.WITHDRAWN,
+        ApplicationState.CLOSED,
+        ApplicationState.ARCHIVED,
     },
     ApplicationState.PREPARING: {
         ApplicationState.READY_TO_APPLY,
         ApplicationState.SHORTLISTED,  # loop back if prep stalls
         ApplicationState.WITHDRAWN,
         ApplicationState.CLOSED,
+        ApplicationState.ARCHIVED,
     },
     ApplicationState.READY_TO_APPLY: {
         ApplicationState.APPLIED,
         ApplicationState.SHORTLISTED,
         ApplicationState.WITHDRAWN,
         ApplicationState.CLOSED,
+        ApplicationState.ARCHIVED,
     },
     ApplicationState.APPLIED: {
         ApplicationState.SCREENING,
+        ApplicationState.RECRUITER_CONTACT,
         ApplicationState.REJECTED,
         ApplicationState.WITHDRAWN,
         ApplicationState.CLOSED,
+        ApplicationState.ARCHIVED,
     },
     ApplicationState.SCREENING: {
         ApplicationState.INTERVIEW,
@@ -78,6 +109,15 @@ TRANSITIONS: dict[ApplicationState, set[ApplicationState]] = {
         ApplicationState.REJECTED,
         ApplicationState.WITHDRAWN,
         ApplicationState.CLOSED,
+        ApplicationState.ARCHIVED,
+    },
+    ApplicationState.RECRUITER_CONTACT: {
+        ApplicationState.INTERVIEW,
+        ApplicationState.ASSESSMENT,
+        ApplicationState.REJECTED,
+        ApplicationState.WITHDRAWN,
+        ApplicationState.CLOSED,
+        ApplicationState.ARCHIVED,
     },
     ApplicationState.INTERVIEW: {
         ApplicationState.ASSESSMENT,
@@ -85,6 +125,7 @@ TRANSITIONS: dict[ApplicationState, set[ApplicationState]] = {
         ApplicationState.REJECTED,
         ApplicationState.WITHDRAWN,
         ApplicationState.CLOSED,
+        ApplicationState.ARCHIVED,
     },
     ApplicationState.ASSESSMENT: {
         ApplicationState.INTERVIEW,
@@ -92,14 +133,17 @@ TRANSITIONS: dict[ApplicationState, set[ApplicationState]] = {
         ApplicationState.REJECTED,
         ApplicationState.WITHDRAWN,
         ApplicationState.CLOSED,
+        ApplicationState.ARCHIVED,
     },
     ApplicationState.OFFER: {
         ApplicationState.CLOSED,  # accepted -> close as filled
         ApplicationState.WITHDRAWN,  # declined
+        ApplicationState.ARCHIVED,
     },
     ApplicationState.REJECTED: set(),
     ApplicationState.WITHDRAWN: set(),
     ApplicationState.CLOSED: set(),
+    ApplicationState.ARCHIVED: set(),  # terminal: stale/expired
 }
 
 TERMINAL_STATES = {s for s, nxt in TRANSITIONS.items() if not nxt}

@@ -30,9 +30,12 @@ _STATE_WEIGHT = {
     ApplicationState.READY_TO_APPLY: 5.0,
     ApplicationState.APPLIED: 2.5,  # waiting; jumps to 5.0 when follow-up due
     ApplicationState.SCREENING: 4.0,
+    ApplicationState.RECRUITER_CONTACT: 4.0,  # M3: same urgency as SCREENING
     ApplicationState.INTERVIEW: 4.0,
     ApplicationState.ASSESSMENT: 4.0,
     ApplicationState.OFFER: 5.0,
+    ApplicationState.REVIEWING: 2.5,  # M3: same as REVIEWED
+    ApplicationState.APPROVED_TO_APPLY: 4.5,  # M3: founder approved, action next
 }
 
 _FIT_WEIGHT = {
@@ -156,6 +159,33 @@ def compute_next_action(
     if state is ApplicationState.DISCOVERED:
         action = "Review the job description, then run the fit analysis"
         rationale = "New opportunity - nothing has been reviewed yet."
+
+    elif state is ApplicationState.REVIEWING:
+        # M3: same semantics as REVIEWED
+        if fit is None:
+            action = "Run the evidence-based fit analysis"
+            rationale = "Reviewing - not yet scored against your evidence."
+        elif fit.band in ("STRONG FIT", "POSSIBLE FIT"):
+            action = "Approve or shortlist this opportunity"
+            rationale = f"{fit.band} - worth pursuing."
+        else:
+            action = "Decide: approve as a stretch, or archive"
+            rationale = f"{fit.band} - requirements are far from current evidence."
+
+    elif state is ApplicationState.APPROVED_TO_APPLY:
+        # M3: founder has approved; action is to begin preparation
+        action = "Begin application preparation (tailor your resume)"
+        rationale = "Approved to apply - preparation has not started."
+        if not has_base_resume:
+            action = "Save your base resume to begin preparation"
+
+    elif state is ApplicationState.RECRUITER_CONTACT:
+        # M3: same semantics as SCREENING
+        action = "Respond to the recruiter and prepare for the screening conversation"
+        rationale = "A recruiter has contacted you - respond promptly."
+        if upcoming_interview is not None:
+            stage_label = (upcoming_interview.stage or "screening").replace("_", " ")
+            action = f"Prepare for the {stage_label} conversation"
 
     elif state is ApplicationState.REVIEWED:
         if fit is None:

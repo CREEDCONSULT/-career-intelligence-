@@ -110,6 +110,7 @@ def test_states_for_view_mapping():
     assert [s.value for s in states_for_view("Preparing")] == ["PREPARING", "READY_TO_APPLY"]
     assert [s.value for s in states_for_view("Interview")] == [
         "SCREENING",
+        "RECRUITER_CONTACT",
         "INTERVIEW",
         "ASSESSMENT",
         "OFFER",
