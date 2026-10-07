@@ -77,7 +77,7 @@ def test_full_vertical_slice(db):
 
     # 3. evidence-based fit
     fit = evaluate_fit(opp, evs.list_all(), today=datetime(2026, 10, 5).date())
-    assert fit.band in ("Strong match", "Good match")
+    assert fit.band in ("STRONG FIT", "POSSIBLE FIT")
     assert fit.coverage_hard == 1.0
     assert all(s.evidence_ids for s in fit.strengths)
 
@@ -176,3 +176,4 @@ def test_document_history_survives_state_changes(db):
     # documents outlive the application lifecycle
     assert [v.version for v in docs.list_versions(app.application_id, "base_resume")] == [1, 2]
     assert docs.latest(app.application_id, "base_resume").content == "v2"
+

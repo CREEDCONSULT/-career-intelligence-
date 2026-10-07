@@ -36,10 +36,10 @@ _STATE_WEIGHT = {
 }
 
 _FIT_WEIGHT = {
-    "Strong match": 3.0,
-    "Good match": 2.0,
-    "Fair match": 1.0,
-    "Weak match": 0.5,
+    "STRONG FIT": 3.0,
+    "POSSIBLE FIT": 2.0,
+    "WEAK FIT": 1.0,
+    "INSUFFICIENT EVIDENCE": 0.5,
 }
 
 FOLLOW_UP_AFTER_DAYS = 7
@@ -161,7 +161,7 @@ def compute_next_action(
         if fit is None:
             action = "Run the evidence-based fit analysis"
             rationale = "Reviewed but not yet scored against your evidence."
-        elif fit.band in ("Strong match", "Good match"):
+        elif fit.band in ("STRONG FIT", "POSSIBLE FIT"):
             action = "Shortlist this opportunity"
             rationale = f"{fit.band} - worth pursuing."
         else:

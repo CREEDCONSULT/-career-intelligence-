@@ -1,4 +1,4 @@
-"""Tests: next-best-action engine (deterministic)."""
+﻿"""Tests: next-best-action engine (deterministic)."""
 
 from datetime import date, datetime, timedelta
 
@@ -25,7 +25,7 @@ def _app(state, opp_id=1, app_id=1, updated=None):
     )
 
 
-def _fit(band="Good match", urgency=1.0, gaps=None):
+def _fit(band="POSSIBLE FIT", urgency=1.0, gaps=None):
     from careeros.fit_engine import Gap
 
     return FitResult(
@@ -84,7 +84,7 @@ def test_reviewed_without_fit_asks_to_run_fit():
 
 
 def test_reviewed_weak_fit_suggests_archive_decision():
-    a = compute_next_action(_app("REVIEWED"), fit=_fit(band="Weak match"), now=NOW)
+    a = compute_next_action(_app("REVIEWED"), fit=_fit(band="INSUFFICIENT EVIDENCE"), now=NOW)
     assert "archive" in a.action.lower()
 
 
@@ -227,3 +227,4 @@ def test_terminal_applications_excluded_from_board(tmp_path):
         now=NOW,
     )
     assert actions == []
+

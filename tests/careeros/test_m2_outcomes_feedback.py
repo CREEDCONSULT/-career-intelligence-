@@ -93,7 +93,7 @@ def test_outcome_offer_via_closed(tmp_path):
         app,
         apps,
         opp,
-        "Good match",
+        "POSSIBLE FIT",
         1,
         1,
         role_family(opp),
@@ -111,7 +111,7 @@ def test_no_response_override_is_explicit_only(tmp_path):
         app,
         apps,
         opp,
-        "Fair match",
+        "WEAK FIT",
         2,
         None,
         role_family(opp),
@@ -136,7 +136,7 @@ def test_find_by_application(tmp_path):
 def _mk_outcome(
     i,
     outcome_type,
-    fit_band="Good match",
+    fit_band="POSSIBLE FIT",
     source="manual",
     resume_version=1,
     role_family="data",
@@ -182,15 +182,15 @@ def test_anitics_enough_samples_show_rates():
 
 def test_analytics_by_fit_band_and_source():
     outcomes = [
-        _mk_outcome(i, "rejected", fit_band="Weak match", source="jobbank") for i in range(1, 6)
-    ] + [_mk_outcome(i, "offer", fit_band="Strong match", source="manual") for i in range(11, 16)]
+        _mk_outcome(i, "rejected", fit_band="INSUFFICIENT EVIDENCE", source="jobbank") for i in range(1, 6)
+    ] + [_mk_outcome(i, "offer", fit_band="STRONG FIT", source="manual") for i in range(11, 16)]
     report = outcome_analytics(outcomes)
     by_band = report["metrics"]["by_fit_band"]
-    assert set(by_band.keys()) == {"Weak match", "Strong match"}
+    assert set(by_band.keys()) == {"INSUFFICIENT EVIDENCE", "STRONG FIT"}
     by_source = report["metrics"]["by_source"]
     assert set(by_source.keys()) == {"jobbank", "manual"}
     # each bucket has n>=5 so rates are computed, not labeled
-    assert by_band["Weak match"]["response_rate"].rate is not None
+    assert by_band["INSUFFICIENT EVIDENCE"]["response_rate"].rate is not None
 
 
 def test_analytics_empty_is_honest():
@@ -306,4 +306,5 @@ def test_winning_evidence_and_requested_strength_proposed():
     kinds = [s.kind for s in suggestions]
     assert "requested_skill" in kinds
     assert "winning_evidence" in kinds
+
 

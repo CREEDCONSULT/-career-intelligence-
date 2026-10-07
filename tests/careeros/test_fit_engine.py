@@ -1,4 +1,4 @@
-"""Tests: deterministic fit engine."""
+﻿"""Tests: deterministic fit engine."""
 
 from datetime import date, timedelta
 
@@ -54,7 +54,7 @@ def test_full_coverage_yields_strong_band():
     fit = evaluate_fit(_opp(), items, today=date(2026, 10, 5))
     assert isinstance(fit, FitResult)
     assert fit.coverage_hard == 1.0
-    assert fit.band == "Strong match"
+    assert fit.band == "STRONG FIT"
     assert fit.score >= 80
     assert fit.interview_risk in ("low", "medium")
     # traceability: every strength cites evidence ids
@@ -69,7 +69,7 @@ def test_missing_requirement_is_a_genuine_gap():
     gap_names = [g.skill for g in fit.gaps] + [g.skill for g in fit.transferable]
     assert any("airflow" in n.lower() for n in gap_names)
     assert fit.coverage_hard < 1.0
-    assert fit.band in ("Fair match", "Good match", "Weak match")
+    assert fit.band in ("WEAK FIT", "POSSIBLE FIT", "INSUFFICIENT EVIDENCE")
 
 
 def test_no_required_skills_is_neutral_not_zero():
@@ -186,7 +186,7 @@ def test_closing_urgency_bands():
 
 def test_band_and_recommendation_strings_present():
     fit = evaluate_fit(_opp(), [_ev(1, skills=["Python"])], today=date(2026, 10, 5))
-    assert fit.band in ("Strong match", "Good match", "Fair match", "Weak match")
+    assert fit.band in ("STRONG FIT", "POSSIBLE FIT", "WEAK FIT", "INSUFFICIENT EVIDENCE")
     assert fit.recommendation  # non-empty guidance
 
 
@@ -194,3 +194,4 @@ def test_extract_skills_from_text_synonym_aware():
     skills = extract_skills_from_text("Hands-on ML and k8s style ops with aws")
     assert "amazon web services" in skills or skills  # smoke: matcher engaged
     assert "python" not in skills  # not mentioned
+

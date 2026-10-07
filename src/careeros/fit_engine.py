@@ -70,7 +70,7 @@ def _skill_ids_from_text(text: str) -> dict[str, set[str]]:
 # Result types
 # ---------------------------------------------------------------------------
 
-BANDS = ("Strong match", "Good match", "Fair match", "Weak match")
+BANDS = ("STRONG FIT", "POSSIBLE FIT", "WEAK FIT", "INSUFFICIENT EVIDENCE")
 
 
 @dataclass
@@ -343,13 +343,16 @@ def evaluate_fit(
         )
     )
     if score >= 80:
-        band, rec = "Strong match", "Apply - strong evidence-backed fit."
+        band, rec = "STRONG FIT", "Apply - strong evidence-backed fit."
     elif score >= 60:
-        band, rec = "Good match", "Prepare tailored materials, then apply."
+        band, rec = "POSSIBLE FIT", "Prepare tailored materials, then apply."
     elif score >= 40:
-        band, rec = "Fair match", "Stretch application - address the listed gaps first."
+        band, rec = "WEAK FIT", "Stretch application - address the listed gaps first."
     else:
-        band, rec = "Weak match", "Likely pass - requirements are far from current evidence."
+        band, rec = (
+            "INSUFFICIENT EVIDENCE",
+            "Likely pass - evidence does not support the requirements.",
+        )
 
     # ---- gaps + transferables -------------------------------------------------------
     # A missing requirement is "possibly transferable" when the user holds a
